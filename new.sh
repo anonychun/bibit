@@ -24,7 +24,7 @@ git clone --depth 1 https://github.com/anonychun/bibit.git "$TMP_DIR"
 
 # Replace project name
 cd "$TMP_DIR"
-grep -rl "github.com/anonychun/bibit" . | xargs sed -i "s|github.com/anonychun/bibit|$PROJECT|g"
+grep -rl "github.com/anonychun/bibit" . | xargs perl -pi -e "s|github.com/anonychun/bibit|$PROJECT|g"
 
 # Copy .env.sample to .env
 cp .env.sample .env
