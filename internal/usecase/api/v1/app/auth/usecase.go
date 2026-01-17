@@ -65,7 +65,7 @@ func (u *UsecaseImpl) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRes
 	}
 
 	res := &SignUpResponse{}
-	repository.Transaction(ctx, func(ctx context.Context) error {
+	err = repository.Transaction(ctx, func(ctx context.Context) error {
 		err = u.userRepository.Create(ctx, user)
 		if err != nil {
 			return err
