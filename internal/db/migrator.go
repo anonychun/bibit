@@ -13,14 +13,21 @@ func init() {
 	do.Provide(bootstrap.Injector, NewMigrator)
 }
 
-type Migrator struct {
+type Migrator interface {
+	Migrate(ctx context.Context) error
+	Rollback(ctx context.Context) error
+}
+
+type MigratorImpl struct {
+	sql      Sql
 	provider *goose.Provider
 }
 
-func NewMigrator(i do.Injector) (*Migrator, error) {
+func NewMigrator(i do.Injector) (Migrator, error) {
+	sql := do.MustInvoke[Sql](i)
 	provider, err := goose.NewProvider(
 		"postgres",
-		do.MustInvoke[*Sql](i).sqlDB,
+		sql.SqlDB(),
 		migrations.MigrationsFs,
 		goose.WithVerbose(true),
 	)
@@ -28,17 +35,18 @@ func NewMigrator(i do.Injector) (*Migrator, error) {
 		return nil, err
 	}
 
-	return &Migrator{
+	return &MigratorImpl{
+		sql:      sql,
 		provider: provider,
 	}, nil
 }
 
-func (m *Migrator) Migrate(ctx context.Context) error {
+func (m *MigratorImpl) Migrate(ctx context.Context) error {
 	_, err := m.provider.Up(ctx)
 	return err
 }
 
-func (m *Migrator) Rollback(ctx context.Context) error {
+func (m *MigratorImpl) Rollback(ctx context.Context) error {
 	_, err := m.provider.Down(ctx)
 	return err
 }

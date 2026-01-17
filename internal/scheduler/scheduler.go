@@ -9,9 +9,12 @@ func init() {
 	do.Provide(bootstrap.Injector, NewScheduler)
 }
 
-type Scheduler struct {
+type Scheduler interface {
 }
 
-func NewScheduler(i do.Injector) (*Scheduler, error) {
-	return &Scheduler{}, nil
+type SchedulerImpl struct {
+}
+
+func NewScheduler(i do.Injector) (Scheduler, error) {
+	return &SchedulerImpl{}, nil
 }

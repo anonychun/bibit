@@ -19,7 +19,7 @@ func main() {
 			Name:  "migrate",
 			Usage: "Apply all pending migrations",
 			Action: func(ctx context.Context, c *cli.Command) error {
-				migrator := do.MustInvoke[*db.Migrator](bootstrap.Injector)
+				migrator := do.MustInvoke[db.Migrator](bootstrap.Injector)
 				return migrator.Migrate(ctx)
 			},
 		},
@@ -27,7 +27,7 @@ func main() {
 			Name:  "rollback",
 			Usage: "Revert the last applied migration",
 			Action: func(ctx context.Context, c *cli.Command) error {
-				migrator := do.MustInvoke[*db.Migrator](bootstrap.Injector)
+				migrator := do.MustInvoke[db.Migrator](bootstrap.Injector)
 				return migrator.Rollback(ctx)
 			},
 		},
@@ -49,7 +49,7 @@ func main() {
 			Name:  "seed",
 			Usage: "Seed the database with initial data",
 			Action: func(ctx context.Context, c *cli.Command) error {
-				seeder := do.MustInvoke[*db.Seeder](bootstrap.Injector)
+				seeder := do.MustInvoke[db.Seeder](bootstrap.Injector)
 				return seeder.Seed(ctx)
 			},
 		},
@@ -62,13 +62,13 @@ func main() {
 					return err
 				}
 
-				migrator := do.MustInvoke[*db.Migrator](bootstrap.Injector)
+				migrator := do.MustInvoke[db.Migrator](bootstrap.Injector)
 				err = migrator.Migrate(ctx)
 				if err != nil {
 					return err
 				}
 
-				seeder := do.MustInvoke[*db.Seeder](bootstrap.Injector)
+				seeder := do.MustInvoke[db.Seeder](bootstrap.Injector)
 				return seeder.Seed(ctx)
 			},
 		},
@@ -86,13 +86,13 @@ func main() {
 					return err
 				}
 
-				migrator := do.MustInvoke[*db.Migrator](bootstrap.Injector)
+				migrator := do.MustInvoke[db.Migrator](bootstrap.Injector)
 				err = migrator.Migrate(ctx)
 				if err != nil {
 					return err
 				}
 
-				seeder := do.MustInvoke[*db.Seeder](bootstrap.Injector)
+				seeder := do.MustInvoke[db.Seeder](bootstrap.Injector)
 				return seeder.Seed(ctx)
 			},
 		},

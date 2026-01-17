@@ -3,15 +3,45 @@ package auth
 import (
 	"context"
 
+	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/consts"
 	"github.com/anonychun/bibit/internal/current"
 	"github.com/anonychun/bibit/internal/entity"
 	"github.com/anonychun/bibit/internal/repository"
+	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
+	repositoryUserSession "github.com/anonychun/bibit/internal/repository/user_session"
+	"github.com/anonychun/bibit/internal/validation"
+	"github.com/samber/do/v2"
 )
 
-func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error) {
+func init() {
+	do.Provide(bootstrap.Injector, NewUsecase)
+}
+
+type Usecase interface {
+	SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error)
+	SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error)
+	SignOut(ctx context.Context, req SignOutRequest) error
+	Me(ctx context.Context) (*MeResponse, error)
+}
+
+type UsecaseImpl struct {
+	validator             validation.Validator
+	userRepository        repositoryUser.Repository
+	userSessionRepository repositoryUserSession.Repository
+}
+
+func NewUsecase(i do.Injector) (Usecase, error) {
+	return &UsecaseImpl{
+		validator:             do.MustInvoke[validation.Validator](i),
+		userRepository:        do.MustInvoke[repositoryUser.Repository](i),
+		userSessionRepository: do.MustInvoke[repositoryUserSession.Repository](i),
+	}, nil
+}
+
+func (u *UsecaseImpl) SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error) {
 	validationErr := u.validator.Struct(&req)
-	isEmailAddressExists, err := u.repository.User.ExistsByEmailAddress(ctx, req.EmailAddress)
+	isEmailAddressExists, err := u.userRepository.ExistsByEmailAddress(ctx, req.EmailAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +66,7 @@ func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRespons
 
 	res := &SignUpResponse{}
 	repository.Transaction(ctx, func(ctx context.Context) error {
-		err = u.repository.User.Create(ctx, user)
+		err = u.userRepository.Create(ctx, user)
 		if err != nil {
 			return err
 		}
@@ -48,7 +78,7 @@ func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRespons
 		}
 		userSession.GenerateToken()
 
-		err = u.repository.UserSession.Create(ctx, userSession)
+		err = u.userSessionRepository.Create(ctx, userSession)
 		if err != nil {
 			return err
 		}
@@ -63,13 +93,13 @@ func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRespons
 	return res, nil
 }
 
-func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
+func (u *UsecaseImpl) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
 	validationErr := u.validator.Struct(&req)
 	if validationErr.IsFail() {
 		return nil, validationErr
 	}
 
-	user, err := u.repository.User.FindByEmailAddress(ctx, req.EmailAddress)
+	user, err := u.userRepository.FindByEmailAddress(ctx, req.EmailAddress)
 	if err == consts.ErrRecordNotFound {
 		return nil, consts.ErrInvalidCredentials
 	} else if err != nil {
@@ -88,7 +118,7 @@ func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInRespons
 	}
 	userSession.GenerateToken()
 
-	err = u.repository.UserSession.Create(ctx, userSession)
+	err = u.userSessionRepository.Create(ctx, userSession)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +126,8 @@ func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInRespons
 	return &SignInResponse{Token: userSession.Token}, nil
 }
 
-func (u *Usecase) SignOut(ctx context.Context, req SignOutRequest) error {
-	err := u.repository.UserSession.DeleteByToken(ctx, req.Token)
+func (u *UsecaseImpl) SignOut(ctx context.Context, req SignOutRequest) error {
+	err := u.userSessionRepository.DeleteByToken(ctx, req.Token)
 	if err != nil {
 		return err
 	}
@@ -105,7 +135,7 @@ func (u *Usecase) SignOut(ctx context.Context, req SignOutRequest) error {
 	return nil
 }
 
-func (u *Usecase) Me(ctx context.Context) (*MeResponse, error) {
+func (u *UsecaseImpl) Me(ctx context.Context) (*MeResponse, error) {
 	user := current.User(ctx)
 	if user == nil {
 		return nil, consts.ErrUnauthorized

@@ -1,4 +1,4 @@
-package validator
+package validation
 
 import (
 	"github.com/anonychun/bibit/internal/api"
@@ -11,20 +11,24 @@ func init() {
 	do.Provide(bootstrap.Injector, NewValidator)
 }
 
-type Validator struct {
+type Validator interface {
+	Struct(s any) api.ValidationError
 }
 
-func NewValidator(i do.Injector) (*Validator, error) {
+type ValidatorImpl struct {
+}
+
+func NewValidator(i do.Injector) (Validator, error) {
 	validate.Config(func(opt *validate.GlobalOption) {
 		opt.StopOnError = false
 		opt.SkipOnEmpty = false
 		opt.FieldTag = "field"
 	})
 
-	return &Validator{}, nil
+	return &ValidatorImpl{}, nil
 }
 
-func (v *Validator) Struct(s any) api.ValidationError {
+func (v *ValidatorImpl) Struct(s any) api.ValidationError {
 	validationErr := make(api.ValidationError)
 	validation := validate.Struct(s)
 	if !validation.Validate() {
