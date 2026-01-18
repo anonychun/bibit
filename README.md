@@ -166,8 +166,8 @@ To start the HTTP server, run:
 To execute a function within a database transaction in the use case layer, you can use the `repository.Transaction` function. Here's an example:
 
 ```go
-func (u *Usecase) Delete(ctx context.Context, req DeleteRequest) error {
-	exists, err := u.repository.Admin.ExistsById(ctx, req.Id)
+func (u *UsecaseImpl) Delete(ctx context.Context, req DeleteRequest) error {
+	exists, err := u.adminRepository.ExistsById(ctx, req.Id)
 	if err != nil {
 		return err
 	}
@@ -176,13 +176,13 @@ func (u *Usecase) Delete(ctx context.Context, req DeleteRequest) error {
 		return consts.ErrAdminNotFound
 	}
 
-	return u.repository.Transaction(ctx, func(ctx context.Context) error {
-		err := u.repository.AdminSession.DeleteAllByAdminId(ctx, req.Id)
+	return repository.Transaction(ctx, func(ctx context.Context) error {
+		err := u.adminSessionRepository.DeleteAllByAdminId(ctx, req.Id)
 		if err != nil {
 			return err
 		}
 
-		return u.repository.Admin.DeleteById(ctx, req.Id)
+		return u.adminRepository.DeleteById(ctx, req.Id)
 	})
 }
 ```
