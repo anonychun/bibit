@@ -2,9 +2,10 @@ package server
 
 import (
 	"github.com/anonychun/bibit/internal/api"
-	"github.com/anonychun/bibit/internal/app"
 	"github.com/anonychun/bibit/internal/bootstrap"
-	"github.com/anonychun/bibit/internal/middleware"
+	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
+	usecaseApiV1AdminAuth "github.com/anonychun/bibit/internal/usecase/api/v1/admin/auth"
+	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	"github.com/anonychun/bibit/public"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
@@ -16,8 +17,10 @@ func namespace(e *echo.Group, path string, f func(e *echo.Group)) {
 }
 
 func routes(e *echo.Echo) error {
-	m := do.MustInvoke[*middleware.Middleware](bootstrap.Injector)
-	h := do.MustInvoke[*app.Handler](bootstrap.Injector)
+	authMiddleware := do.MustInvoke[middlewareAuth.Middleware](bootstrap.Injector)
+
+	apiV1AdminAuthHandler := do.MustInvoke[usecaseApiV1AdminAuth.Handler](bootstrap.Injector)
+	apiV1AppAuthHandler := do.MustInvoke[usecaseApiV1AppAuth.Handler](bootstrap.Injector)
 
 	e.HTTPErrorHandler = api.HttpErrorHandler
 	e.Use(echomiddleware.Recover())
@@ -26,20 +29,20 @@ func routes(e *echo.Echo) error {
 	apiRouter := e.Group("/api")
 	namespace(apiRouter, "/v1", func(e *echo.Group) {
 		namespace(e, "/admin", func(e *echo.Group) {
-			e.Use(m.Auth.AuthenticateAdmin)
+			e.Use(authMiddleware.AuthenticateAdmin)
 
-			e.POST("/auth/signin", h.Api.V1.Admin.Auth.SignIn)
-			e.POST("/auth/signout", h.Api.V1.Admin.Auth.SignOut)
-			e.GET("/auth/me", h.Api.V1.Admin.Auth.Me)
+			e.POST("/auth/signin", apiV1AdminAuthHandler.SignIn)
+			e.POST("/auth/signout", apiV1AdminAuthHandler.SignOut)
+			e.GET("/auth/me", apiV1AdminAuthHandler.Me)
 		})
 
 		namespace(e, "/app", func(e *echo.Group) {
-			e.Use(m.Auth.AuthenticateUser)
+			e.Use(authMiddleware.AuthenticateUser)
 
-			e.POST("/auth/signup", h.Api.V1.App.Auth.SignUp)
-			e.POST("/auth/signin", h.Api.V1.App.Auth.SignIn)
-			e.POST("/auth/signout", h.Api.V1.App.Auth.SignOut)
-			e.GET("/auth/me", h.Api.V1.App.Auth.Me)
+			e.POST("/auth/signup", apiV1AppAuthHandler.SignUp)
+			e.POST("/auth/signin", apiV1AppAuthHandler.SignIn)
+			e.POST("/auth/signout", apiV1AppAuthHandler.SignOut)
+			e.GET("/auth/me", apiV1AppAuthHandler.Me)
 		})
 
 		namespace(e, "/landing", func(e *echo.Group) {

@@ -13,17 +13,21 @@ func init() {
 	do.Provide(bootstrap.Injector, NewSeeder)
 }
 
-type Seeder struct {
-	sql *Sql
+type Seeder interface {
+	Seed(ctx context.Context) error
 }
 
-func NewSeeder(i do.Injector) (*Seeder, error) {
-	return &Seeder{
-		sql: do.MustInvoke[*Sql](i),
+type SeederImpl struct {
+	sql Sql
+}
+
+func NewSeeder(i do.Injector) (Seeder, error) {
+	return &SeederImpl{
+		sql: do.MustInvoke[Sql](i),
 	}, nil
 }
 
-func (s *Seeder) Seed(ctx context.Context) error {
+func (s *SeederImpl) Seed(ctx context.Context) error {
 	defaultAdmin := &entity.Admin{
 		Name:         "Achmad Chun Chun",
 		EmailAddress: "anonychun@gmail.com",

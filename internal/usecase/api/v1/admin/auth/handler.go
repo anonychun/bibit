@@ -4,11 +4,33 @@ import (
 	"net/http"
 
 	"github.com/anonychun/bibit/internal/api"
+	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/consts"
 	"github.com/labstack/echo/v4"
+	"github.com/samber/do/v2"
 )
 
-func (h *Handler) SignIn(c echo.Context) error {
+func init() {
+	do.Provide(bootstrap.Injector, NewHandler)
+}
+
+type Handler interface {
+	SignIn(c echo.Context) error
+	SignOut(c echo.Context) error
+	Me(c echo.Context) error
+}
+
+type HandlerImpl struct {
+	usecase Usecase
+}
+
+func NewHandler(i do.Injector) (Handler, error) {
+	return &HandlerImpl{
+		usecase: do.MustInvoke[Usecase](i),
+	}, nil
+}
+
+func (h *HandlerImpl) SignIn(c echo.Context) error {
 	req := SignInRequest{
 		IpAddress: c.RealIP(),
 		UserAgent: c.Request().UserAgent(),
@@ -34,7 +56,7 @@ func (h *Handler) SignIn(c echo.Context) error {
 	return api.NewResponse(c).SendOk()
 }
 
-func (h *Handler) SignOut(c echo.Context) error {
+func (h *HandlerImpl) SignOut(c echo.Context) error {
 	cookie, err := c.Cookie(consts.CookieAdminSession)
 	if err != nil {
 		return err
@@ -60,7 +82,7 @@ func (h *Handler) SignOut(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (h *Handler) Me(c echo.Context) error {
+func (h *HandlerImpl) Me(c echo.Context) error {
 	res, err := h.usecase.Me(c.Request().Context())
 	if err != nil {
 		return err

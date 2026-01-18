@@ -19,12 +19,17 @@ func init() {
 	do.Provide(bootstrap.Injector, NewSql)
 }
 
-type Sql struct {
+type Sql interface {
+	DB(ctx context.Context) *gorm.DB
+	SqlDB() *sql.DB
+}
+
+type SqlImpl struct {
 	gormDB *gorm.DB
 	sqlDB  *sql.DB
 }
 
-func NewSql(i do.Injector) (*Sql, error) {
+func NewSql(i do.Injector) (Sql, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		cfg.Database.Sql.Host,
@@ -59,19 +64,23 @@ func NewSql(i do.Injector) (*Sql, error) {
 		return nil, err
 	}
 
-	return &Sql{
+	return &SqlImpl{
 		gormDB: gormDB,
 		sqlDB:  sqlDB,
 	}, nil
 }
 
-func (s *Sql) DB(ctx context.Context) *gorm.DB {
+func (s *SqlImpl) DB(ctx context.Context) *gorm.DB {
 	tx := current.Tx(ctx)
 	if tx != nil {
 		return tx
 	}
 
 	return s.gormDB.WithContext(ctx)
+}
+
+func (s *SqlImpl) SqlDB() *sql.DB {
+	return s.sqlDB
 }
 
 func CreateSqlDatabase() error {
