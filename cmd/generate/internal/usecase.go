@@ -1,0 +1,83 @@
+package internal
+
+import (
+	"os"
+	"path/filepath"
+)
+
+func GenerateUsecase(name string) error {
+	targetDir := filepath.Join("internal/usecase", name)
+	err := os.MkdirAll(targetDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	data := TemplateData{
+		ModuleName:  getModuleName(),
+		PackageName: extractPackageName(name),
+	}
+
+	err = generateFile(filepath.Join(targetDir, "usecase.go"), usecaseTemplate, data)
+	if err != nil {
+		return err
+	}
+
+	err = generateFile(filepath.Join(targetDir, "handler.go"), handlerTemplate, data)
+	if err != nil {
+		return err
+	}
+
+	err = generateFile(filepath.Join(targetDir, "dto.go"), emptyTemplate, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+const usecaseTemplate = `package {{.PackageName}}
+
+import (
+	"{{.ModuleName}}/internal/bootstrap"
+	"github.com/samber/do/v2"
+)
+
+func init() {
+	do.Provide(bootstrap.Injector, NewUsecase)
+}
+
+type Usecase interface {
+}
+
+type UsecaseImpl struct {
+}
+
+func NewUsecase(i do.Injector) (Usecase, error) {
+	return &UsecaseImpl{}, nil
+}
+`
+
+const handlerTemplate = `package {{.PackageName}}
+
+import (
+	"{{.ModuleName}}/internal/bootstrap"
+	"github.com/samber/do/v2"
+)
+
+func init() {
+	do.Provide(bootstrap.Injector, NewHandler)
+}
+
+type Handler interface {
+}
+
+type HandlerImpl struct {
+	usecase Usecase
+}
+
+func NewHandler(i do.Injector) (Handler, error) {
+	return &HandlerImpl{
+		usecase: do.MustInvoke[Usecase](i),
+	}, nil
+}
+`

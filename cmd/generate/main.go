@@ -36,8 +36,8 @@ func main() {
 			},
 		},
 		{
-			Name:  "app",
-			Usage: "Generate a new app",
+			Name:  "usecase",
+			Usage: "Generate a new usecase",
 			Arguments: []cli.Argument{
 				&cli.StringArg{
 					Name: "name",
@@ -46,10 +46,10 @@ func main() {
 			Action: func(_ context.Context, c *cli.Command) error {
 				name := c.StringArg("name")
 				if name == "" {
-					return errors.New("missing app name")
+					return errors.New("missing usecase name")
 				}
 
-				return internal.GenerateApp(name)
+				return internal.GenerateUsecase(name)
 			},
 		},
 		{

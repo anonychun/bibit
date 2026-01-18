@@ -17,12 +17,7 @@ func GenerateRepository(name string) error {
 		PackageName: extractPackageName(name),
 	}
 
-	err = generateFile(filepath.Join(targetDir, "init.go"), repositoryInitTemplate, data)
-	if err != nil {
-		return err
-	}
-
-	err = generateFile(filepath.Join(targetDir, "repository.go"), emptyTemplate, data)
+	err = generateFile(filepath.Join(targetDir, "repository.go"), repositoryTemplate, data)
 	if err != nil {
 		return err
 	}
@@ -30,7 +25,7 @@ func GenerateRepository(name string) error {
 	return nil
 }
 
-const repositoryInitTemplate = `package {{.PackageName}}
+const repositoryTemplate = `package {{.PackageName}}
 
 import (
 	"{{.ModuleName}}/internal/bootstrap"
@@ -42,12 +37,15 @@ func init() {
 	do.Provide(bootstrap.Injector, NewRepository)
 }
 
-type Repository struct {
+type Repository interface {
+}
+
+type RepositoryImpl struct {
 	sql db.Sql
 }
 
-func NewRepository(i do.Injector) (*Repository, error) {
-	return &Repository{
+func NewRepository(i do.Injector) (Repository, error) {
+	return &RepositoryImpl{
 		sql: do.MustInvoke[db.Sql](i),
 	}, nil
 }
