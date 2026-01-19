@@ -28,16 +28,22 @@ The initialized project will have the following structure:
 - **`migrations`** - Database migration files.
 - **`internal`** - Internal application code.
   - **`api`** - HTTP API utilities.
-  - **`app`** - Application layer with business logic (use cases and handlers).
   - **`bootstrap`** - Coordination of application dependencies.
   - **`config`** - Configuration management with environment variable loading.
   - **`consts`** - Application constants.
   - **`current`** - Context utilities for request-scoped data.
   - **`db`** - Database layer.
+  - **`dto`** - Data transfer objects.
   - **`entity`** - Database models and business entities.
   - **`middleware`** - HTTP middleware.
   - **`repository`** - Data access layer with database operations.
+  - **`scheduler`** - Background job scheduling.
   - **`server`** - HTTP server setup and routing configuration.
+  - **`service`** - Application services.
+  - **`storage`** - File storage utilities.
+  - **`usecase`** - Application layer with business logic (use cases and handlers).
+  - **`validation`** - Input validation utilities.
+  - **`worker`** - Background worker processes.
 
 ## Usage
 
@@ -73,15 +79,15 @@ To create a new database migration, run:
 
 The `<migration-type>` can be either `sql` or `go`, the default is `sql`.
 
-#### App
+#### Usecase
 
-To generate a new application component, run:
+To generate a new usecase component, run:
 
 ```bash
-./bin/generate app <component-name>
+./bin/generate usecase <component-name>
 ```
 
-E.g., `./bin/generate app api/v1/user`.
+E.g., `./bin/generate usecase api/v1/user`.
 
 #### Repository
 
