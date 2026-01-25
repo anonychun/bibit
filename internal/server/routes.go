@@ -7,8 +7,8 @@ import (
 	usecaseApiV1AdminAuth "github.com/anonychun/bibit/internal/usecase/api/v1/admin/auth"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	"github.com/anonychun/bibit/public"
-	"github.com/labstack/echo/v4"
-	echomiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	echomiddleware "github.com/labstack/echo/v5/middleware"
 	"github.com/samber/do/v2"
 )
 
@@ -24,7 +24,7 @@ func routes(e *echo.Echo) error {
 
 	e.HTTPErrorHandler = api.HttpErrorHandler
 	e.Use(echomiddleware.Recover())
-	e.Use(echomiddleware.Logger())
+	// e.Use(echomiddleware.RequestLogger())
 
 	apiRouter := e.Group("/api")
 	namespace(apiRouter, "/v1", func(e *echo.Group) {
@@ -50,7 +50,7 @@ func routes(e *echo.Echo) error {
 	})
 
 	e.StaticFS("/", public.PublicFs)
-	e.GET("/up", func(c echo.Context) error {
+	e.GET("/up", func(c *echo.Context) error {
 		return nil
 	})
 

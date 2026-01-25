@@ -10,7 +10,7 @@ import (
 	repositoryAdminSession "github.com/anonychun/bibit/internal/repository/admin_session"
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
 	repositoryUserSession "github.com/anonychun/bibit/internal/repository/user_session"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
 )
 
@@ -40,7 +40,7 @@ func NewMiddleware(i do.Injector) (Middleware, error) {
 }
 
 func (m *MiddlewareImpl) AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		bypassedPaths := []string{
 			"/api/v1/admin/auth/signin",
 		}
@@ -72,7 +72,7 @@ func (m *MiddlewareImpl) AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFu
 }
 
 func (m *MiddlewareImpl) AuthenticateUser(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		bypassedPaths := []string{
 			"/api/v1/app/auth/signup",
 			"/api/v1/app/auth/signin",

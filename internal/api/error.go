@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 type Error struct {
@@ -15,6 +15,6 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%v", e.Errors)
 }
 
-func HttpErrorHandler(err error, c echo.Context) {
+func HttpErrorHandler(c *echo.Context, err error) {
 	NewResponse(c).SetErrors(err).Send()
 }
