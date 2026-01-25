@@ -5,7 +5,9 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/entity"
-	"github.com/anonychun/bibit/internal/storage"
+	storageS3 "github.com/anonychun/bibit/internal/storage/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/samber/do/v2"
 )
 
@@ -20,12 +22,14 @@ func NewAttachmentBlueprint(ctx context.Context, attachment *entity.Attachment) 
 		return nil, nil
 	}
 
-	s3, err := do.Invoke[storage.S3](bootstrap.Injector)
+	s3Storage, err := do.Invoke[storageS3.S3](bootstrap.Injector)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := s3.PresignedGetObject(ctx, attachment.ObjectName)
+	presignResult, err := s3Storage.PresignGetObject(ctx, &s3.GetObjectInput{
+		Key: aws.String(attachment.ObjectName),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +37,6 @@ func NewAttachmentBlueprint(ctx context.Context, attachment *entity.Attachment) 
 	return &AttachmentBlueprint{
 		Id:       attachment.Id.String(),
 		FileName: attachment.FileName,
-		Url:      u.String(),
+		Url:      presignResult.URL,
 	}, nil
 }
