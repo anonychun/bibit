@@ -17,10 +17,10 @@ func namespace(e *echo.Group, path string, f func(e *echo.Group)) {
 }
 
 func routes(e *echo.Echo) error {
-	authMiddleware := do.MustInvoke[middlewareAuth.Middleware](bootstrap.Injector)
+	authMiddleware := do.MustInvoke[*middlewareAuth.Middleware](bootstrap.Injector)
 
-	apiV1AdminAuthHandler := do.MustInvoke[usecaseApiV1AdminAuth.Handler](bootstrap.Injector)
-	apiV1AppAuthHandler := do.MustInvoke[usecaseApiV1AppAuth.Handler](bootstrap.Injector)
+	apiV1AdminAuthHandler := do.MustInvoke[*usecaseApiV1AdminAuth.Handler](bootstrap.Injector)
+	apiV1AppAuthHandler := do.MustInvoke[*usecaseApiV1AppAuth.Handler](bootstrap.Injector)
 
 	e.HTTPErrorHandler = api.HttpErrorHandler
 	e.Use(echomiddleware.Recover())

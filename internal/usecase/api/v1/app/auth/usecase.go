@@ -18,28 +18,30 @@ func init() {
 	do.Provide(bootstrap.Injector, NewUsecase)
 }
 
-type Usecase interface {
+type IUsecase interface {
 	SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error)
 	SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error)
 	SignOut(ctx context.Context, req SignOutRequest) error
 	Me(ctx context.Context) (*MeResponse, error)
 }
 
-type UsecaseImpl struct {
-	validator             validation.Validator
-	userRepository        repositoryUser.Repository
-	userSessionRepository repositoryUserSession.Repository
+type Usecase struct {
+	validator             validation.IValidator
+	userRepository        repositoryUser.IRepository
+	userSessionRepository repositoryUserSession.IRepository
 }
 
-func NewUsecase(i do.Injector) (Usecase, error) {
-	return &UsecaseImpl{
-		validator:             do.MustInvoke[validation.Validator](i),
-		userRepository:        do.MustInvoke[repositoryUser.Repository](i),
-		userSessionRepository: do.MustInvoke[repositoryUserSession.Repository](i),
+var _ IUsecase = (*Usecase)(nil)
+
+func NewUsecase(i do.Injector) (*Usecase, error) {
+	return &Usecase{
+		validator:             do.MustInvoke[*validation.Validator](i),
+		userRepository:        do.MustInvoke[*repositoryUser.Repository](i),
+		userSessionRepository: do.MustInvoke[*repositoryUserSession.Repository](i),
 	}, nil
 }
 
-func (u *UsecaseImpl) SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error) {
+func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpResponse, error) {
 	validationErr := u.validator.Struct(&req)
 	isEmailAddressExists, err := u.userRepository.ExistsByEmailAddress(ctx, req.EmailAddress)
 	if err != nil {
@@ -93,7 +95,7 @@ func (u *UsecaseImpl) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRes
 	return res, nil
 }
 
-func (u *UsecaseImpl) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
+func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
 	validationErr := u.validator.Struct(&req)
 	if validationErr.IsFail() {
 		return nil, validationErr
@@ -126,7 +128,7 @@ func (u *UsecaseImpl) SignIn(ctx context.Context, req SignInRequest) (*SignInRes
 	return &SignInResponse{Token: userSession.Token}, nil
 }
 
-func (u *UsecaseImpl) SignOut(ctx context.Context, req SignOutRequest) error {
+func (u *Usecase) SignOut(ctx context.Context, req SignOutRequest) error {
 	err := u.userSessionRepository.DeleteByToken(ctx, req.Token)
 	if err != nil {
 		return err
@@ -135,7 +137,7 @@ func (u *UsecaseImpl) SignOut(ctx context.Context, req SignOutRequest) error {
 	return nil
 }
 
-func (u *UsecaseImpl) Me(ctx context.Context) (*MeResponse, error) {
+func (u *Usecase) Me(ctx context.Context) (*MeResponse, error) {
 	user := current.User(ctx)
 	if user == nil {
 		return nil, consts.ErrUnauthorized
