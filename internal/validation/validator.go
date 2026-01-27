@@ -11,24 +11,26 @@ func init() {
 	do.Provide(bootstrap.Injector, NewValidator)
 }
 
-type Validator interface {
+type IValidator interface {
 	Struct(s any) api.ValidationError
 }
 
-type ValidatorImpl struct {
+type Validator struct {
 }
 
-func NewValidator(i do.Injector) (Validator, error) {
+var _ IValidator = (*Validator)(nil)
+
+func NewValidator(i do.Injector) (*Validator, error) {
 	validate.Config(func(opt *validate.GlobalOption) {
 		opt.StopOnError = false
 		opt.SkipOnEmpty = false
 		opt.FieldTag = "field"
 	})
 
-	return &ValidatorImpl{}, nil
+	return &Validator{}, nil
 }
 
-func (v *ValidatorImpl) Struct(s any) api.ValidationError {
+func (v *Validator) Struct(s any) api.ValidationError {
 	validationErr := make(api.ValidationError)
 	validation := validate.Struct(s)
 	if !validation.Validate() {

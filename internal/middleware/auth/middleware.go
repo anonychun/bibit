@@ -18,28 +18,30 @@ func init() {
 	do.Provide(bootstrap.Injector, NewMiddleware)
 }
 
-type Middleware interface {
+type IMiddleware interface {
 	AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFunc
 	AuthenticateUser(next echo.HandlerFunc) echo.HandlerFunc
 }
 
-type MiddlewareImpl struct {
-	adminRepository        repositoryAdmin.Repository
-	adminSessionRepository repositoryAdminSession.Repository
-	userRepository         repositoryUser.Repository
-	userSessionRepository  repositoryUserSession.Repository
+type Middleware struct {
+	adminRepository        repositoryAdmin.IRepository
+	adminSessionRepository repositoryAdminSession.IRepository
+	userRepository         repositoryUser.IRepository
+	userSessionRepository  repositoryUserSession.IRepository
 }
 
-func NewMiddleware(i do.Injector) (Middleware, error) {
-	return &MiddlewareImpl{
-		adminRepository:        do.MustInvoke[repositoryAdmin.Repository](i),
-		adminSessionRepository: do.MustInvoke[repositoryAdminSession.Repository](i),
-		userRepository:         do.MustInvoke[repositoryUser.Repository](i),
-		userSessionRepository:  do.MustInvoke[repositoryUserSession.Repository](i),
+var _ IMiddleware = (*Middleware)(nil)
+
+func NewMiddleware(i do.Injector) (*Middleware, error) {
+	return &Middleware{
+		adminRepository:        do.MustInvoke[*repositoryAdmin.Repository](i),
+		adminSessionRepository: do.MustInvoke[*repositoryAdminSession.Repository](i),
+		userRepository:         do.MustInvoke[*repositoryUser.Repository](i),
+		userSessionRepository:  do.MustInvoke[*repositoryUserSession.Repository](i),
 	}, nil
 }
 
-func (m *MiddlewareImpl) AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Middleware) AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		bypassedPaths := []string{
 			"/api/v1/admin/auth/signin",
@@ -71,7 +73,7 @@ func (m *MiddlewareImpl) AuthenticateAdmin(next echo.HandlerFunc) echo.HandlerFu
 	}
 }
 
-func (m *MiddlewareImpl) AuthenticateUser(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Middleware) AuthenticateUser(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		bypassedPaths := []string{
 			"/api/v1/app/auth/signup",

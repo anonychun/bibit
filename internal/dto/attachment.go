@@ -22,7 +22,7 @@ func NewAttachmentBlueprint(ctx context.Context, attachment *entity.Attachment) 
 		return nil, nil
 	}
 
-	s3Storage, err := do.Invoke[storageS3.S3](bootstrap.Injector)
+	s3Storage, err := do.Invoke[storageS3.IS3](bootstrap.Injector)
 	if err != nil {
 		return nil, err
 	}

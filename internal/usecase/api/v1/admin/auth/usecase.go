@@ -17,27 +17,29 @@ func init() {
 	do.Provide(bootstrap.Injector, NewUsecase)
 }
 
-type Usecase interface {
+type IUsecase interface {
 	SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error)
 	SignOut(ctx context.Context, req SignOutRequest) error
 	Me(ctx context.Context) (*MeResponse, error)
 }
 
-type UsecaseImpl struct {
-	validator              validation.Validator
-	adminRepository        repositoryAdmin.Repository
-	adminSessionRepository repositoryAdminSession.Repository
+type Usecase struct {
+	validator              validation.IValidator
+	adminRepository        repositoryAdmin.IRepository
+	adminSessionRepository repositoryAdminSession.IRepository
 }
 
-func NewUsecase(i do.Injector) (Usecase, error) {
-	return &UsecaseImpl{
-		validator:              do.MustInvoke[validation.Validator](i),
-		adminRepository:        do.MustInvoke[repositoryAdmin.Repository](i),
-		adminSessionRepository: do.MustInvoke[repositoryAdminSession.Repository](i),
+var _ IUsecase = (*Usecase)(nil)
+
+func NewUsecase(i do.Injector) (*Usecase, error) {
+	return &Usecase{
+		validator:              do.MustInvoke[*validation.Validator](i),
+		adminRepository:        do.MustInvoke[*repositoryAdmin.Repository](i),
+		adminSessionRepository: do.MustInvoke[*repositoryAdminSession.Repository](i),
 	}, nil
 }
 
-func (u *UsecaseImpl) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
+func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInResponse, error) {
 	validationErr := u.validator.Struct(&req)
 	if validationErr.IsFail() {
 		return nil, validationErr
@@ -70,7 +72,7 @@ func (u *UsecaseImpl) SignIn(ctx context.Context, req SignInRequest) (*SignInRes
 	return &SignInResponse{Token: adminSession.Token}, nil
 }
 
-func (u *UsecaseImpl) SignOut(ctx context.Context, req SignOutRequest) error {
+func (u *Usecase) SignOut(ctx context.Context, req SignOutRequest) error {
 	err := u.adminSessionRepository.DeleteByToken(ctx, req.Token)
 	if err != nil {
 		return err
@@ -79,7 +81,7 @@ func (u *UsecaseImpl) SignOut(ctx context.Context, req SignOutRequest) error {
 	return nil
 }
 
-func (u *UsecaseImpl) Me(ctx context.Context) (*MeResponse, error) {
+func (u *Usecase) Me(ctx context.Context) (*MeResponse, error) {
 	admin := current.Admin(ctx)
 	if admin == nil {
 		return nil, consts.ErrUnauthorized

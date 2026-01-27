@@ -14,24 +14,26 @@ func init() {
 	do.Provide(bootstrap.Injector, NewHandler)
 }
 
-type Handler interface {
+type IHandler interface {
 	SignUp(c *echo.Context) error
 	SignIn(c *echo.Context) error
 	SignOut(c *echo.Context) error
 	Me(c *echo.Context) error
 }
 
-type HandlerImpl struct {
-	usecase Usecase
+type Handler struct {
+	usecase IUsecase
 }
 
-func NewHandler(i do.Injector) (Handler, error) {
-	return &HandlerImpl{
-		usecase: do.MustInvoke[Usecase](i),
+var _ IHandler = (*Handler)(nil)
+
+func NewHandler(i do.Injector) (*Handler, error) {
+	return &Handler{
+		usecase: do.MustInvoke[*Usecase](i),
 	}, nil
 }
 
-func (h *HandlerImpl) SignUp(c *echo.Context) error {
+func (h *Handler) SignUp(c *echo.Context) error {
 	req := SignUpRequest{
 		IpAddress: c.RealIP(),
 		UserAgent: c.Request().UserAgent(),
@@ -57,7 +59,7 @@ func (h *HandlerImpl) SignUp(c *echo.Context) error {
 	return api.NewResponse(c).SendOk()
 }
 
-func (h *HandlerImpl) SignIn(c *echo.Context) error {
+func (h *Handler) SignIn(c *echo.Context) error {
 	req := SignInRequest{
 		IpAddress: c.RealIP(),
 		UserAgent: c.Request().UserAgent(),
@@ -83,7 +85,7 @@ func (h *HandlerImpl) SignIn(c *echo.Context) error {
 	return api.NewResponse(c).SendOk()
 }
 
-func (h *HandlerImpl) SignOut(c *echo.Context) error {
+func (h *Handler) SignOut(c *echo.Context) error {
 	cookie, err := c.Cookie(consts.CookieUserSession)
 	if err != nil {
 		return err
@@ -109,7 +111,7 @@ func (h *HandlerImpl) SignOut(c *echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (h *HandlerImpl) Me(c *echo.Context) error {
+func (h *Handler) Me(c *echo.Context) error {
 	res, err := h.usecase.Me(c.Request().Context())
 	if err != nil {
 		return err
