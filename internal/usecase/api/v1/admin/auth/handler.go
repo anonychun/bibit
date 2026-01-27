@@ -6,7 +6,7 @@ import (
 	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/consts"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
 )
 
@@ -15,9 +15,9 @@ func init() {
 }
 
 type Handler interface {
-	SignIn(c echo.Context) error
-	SignOut(c echo.Context) error
-	Me(c echo.Context) error
+	SignIn(c *echo.Context) error
+	SignOut(c *echo.Context) error
+	Me(c *echo.Context) error
 }
 
 type HandlerImpl struct {
@@ -30,7 +30,7 @@ func NewHandler(i do.Injector) (Handler, error) {
 	}, nil
 }
 
-func (h *HandlerImpl) SignIn(c echo.Context) error {
+func (h *HandlerImpl) SignIn(c *echo.Context) error {
 	req := SignInRequest{
 		IpAddress: c.RealIP(),
 		UserAgent: c.Request().UserAgent(),
@@ -56,7 +56,7 @@ func (h *HandlerImpl) SignIn(c echo.Context) error {
 	return api.NewResponse(c).SendOk()
 }
 
-func (h *HandlerImpl) SignOut(c echo.Context) error {
+func (h *HandlerImpl) SignOut(c *echo.Context) error {
 	cookie, err := c.Cookie(consts.CookieAdminSession)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (h *HandlerImpl) SignOut(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (h *HandlerImpl) Me(c echo.Context) error {
+func (h *HandlerImpl) Me(c *echo.Context) error {
 	res, err := h.usecase.Me(c.Request().Context())
 	if err != nil {
 		return err

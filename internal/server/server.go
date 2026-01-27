@@ -7,35 +7,35 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
 )
 
 func Start(ctx context.Context) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	e := echo.New()
 	err := routes(e)
 	if err != nil {
 		return err
 	}
 
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
+	cfg := do.MustInvoke[*config.Config](bootstrap.Injector)
+	sc := echo.StartConfig{
+		Address:         fmt.Sprintf(":%d", cfg.Server.Port),
+		GracefulTimeout: 30 * time.Second,
+	}
 
-	go func() {
-		cfg := do.MustInvoke[*config.Config](bootstrap.Injector)
-		err := e.Start(fmt.Sprintf(":%d", cfg.Server.Port))
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatalln("failed to start server:", err)
-		}
-	}()
+	err = sc.Start(ctx, e)
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatalln("failed to start server:", err)
+	}
 
-	<-ctx.Done()
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	return e.Shutdown(ctx)
+	return nil
 }
