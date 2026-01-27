@@ -14,24 +14,24 @@ import (
 )
 
 func init() {
-	do.Provide(bootstrap.Injector, NewS3)
+	do.Provide(bootstrap.Injector, NewStorage)
 }
 
-type IS3 interface {
+type IStorage interface {
 	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 	PresignGetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)
 }
 
-type S3 struct {
+type Storage struct {
 	client        *s3.Client
 	presignClient *s3.PresignClient
 	config        *config.Config
 }
 
-var _ IS3 = (*S3)(nil)
+var _ IStorage = (*Storage)(nil)
 
-func NewS3(i do.Injector) (*S3, error) {
+func NewStorage(i do.Injector) (*Storage, error) {
 	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
 
@@ -52,14 +52,14 @@ func NewS3(i do.Injector) (*S3, error) {
 		o.BaseEndpoint = aws.String(cfg.Storage.S3.Endpoint)
 	})
 
-	return &S3{
+	return &Storage{
 		client:        client,
 		presignClient: s3.NewPresignClient(client),
 		config:        cfg,
 	}, nil
 }
 
-func (s *S3) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+func (s *Storage) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
 	if params.Bucket == nil {
 		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
 	}
@@ -67,7 +67,7 @@ func (s *S3) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ..
 	return s.client.PutObject(ctx, params, optFns...)
 }
 
-func (s *S3) GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+func (s *Storage) GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 	if params.Bucket == nil {
 		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
 	}
@@ -75,7 +75,7 @@ func (s *S3) GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ..
 	return s.client.GetObject(ctx, params, optFns...)
 }
 
-func (s *S3) PresignGetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error) {
+func (s *Storage) PresignGetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error) {
 	if params.Bucket == nil {
 		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
 	}
