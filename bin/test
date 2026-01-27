@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 source .env
-export DATABASE_SQL_NAME="${DATABASE_SQL_NAME}_test"
+export DB_SQL_NAME="${DB_SQL_NAME}_test"
 
 ./bin/db drop
 ./bin/db create

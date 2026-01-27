@@ -18,7 +18,7 @@ type Config struct {
 		Port int `envconfig:"port"`
 	} `envconfig:"server"`
 
-	Database struct {
+	DB struct {
 		Sql struct {
 			Host     string `envconfig:"host"`
 			Port     int    `envconfig:"port"`
@@ -26,7 +26,7 @@ type Config struct {
 			Password string `envconfig:"password"`
 			Name     string `envconfig:"name"`
 		} `envconfig:"sql"`
-	} `envconfig:"database"`
+	} `envconfig:"db"`
 
 	Storage struct {
 		S3 struct {

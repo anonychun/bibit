@@ -31,10 +31,10 @@ var _ IDB = (*DB)(nil)
 func NewDB(i do.Injector) (*DB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%d sslmode=disable",
-		cfg.Database.Sql.Host,
-		cfg.Database.Sql.User,
-		cfg.Database.Sql.Password,
-		cfg.Database.Sql.Port,
+		cfg.DB.Sql.Host,
+		cfg.DB.Sql.User,
+		cfg.DB.Sql.Password,
+		cfg.DB.Sql.Port,
 	)
 
 	gormConfig := &gorm.Config{
@@ -55,7 +55,7 @@ func NewDB(i do.Injector) (*DB, error) {
 
 func (d *DB) CreateDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
+	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.DB.Sql.Name).Scan(&exists).Error
 	if err != nil {
 		return err
 	}
@@ -64,12 +64,12 @@ func (d *DB) CreateDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("CREATE DATABASE %s", d.config.Database.Sql.Name)).Error
+	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("CREATE DATABASE %s", d.config.DB.Sql.Name)).Error
 }
 
 func (d *DB) DropDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
+	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.DB.Sql.Name).Scan(&exists).Error
 	if err != nil {
 		return err
 	}
@@ -78,5 +78,5 @@ func (d *DB) DropDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("DROP DATABASE %s", d.config.Database.Sql.Name)).Error
+	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("DROP DATABASE %s", d.config.DB.Sql.Name)).Error
 }

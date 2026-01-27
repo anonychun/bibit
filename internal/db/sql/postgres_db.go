@@ -29,11 +29,11 @@ var _ IDB = (*PostgresDB)(nil)
 func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.Database.Sql.Host,
-		cfg.Database.Sql.User,
-		cfg.Database.Sql.Password,
-		cfg.Database.Sql.Name,
-		cfg.Database.Sql.Port,
+		cfg.DB.Sql.Host,
+		cfg.DB.Sql.User,
+		cfg.DB.Sql.Password,
+		cfg.DB.Sql.Name,
+		cfg.DB.Sql.Port,
 	)
 
 	gormConfig := &gorm.Config{
