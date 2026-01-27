@@ -64,12 +64,12 @@ func (d *DB) Seed(ctx context.Context) error {
 		return err
 	}
 
-	err = d.gormDB.First(defaultAdmin, "email_address = ?", defaultAdmin.EmailAddress).Error
+	err = d.gormDB.WithContext(ctx).First(defaultAdmin, "email_address = ?", defaultAdmin.EmailAddress).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
 
-	err = d.gormDB.Save(defaultAdmin).Error
+	err = d.gormDB.WithContext(ctx).Save(defaultAdmin).Error
 	if err != nil {
 		return err
 	}

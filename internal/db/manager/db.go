@@ -55,7 +55,7 @@ func NewDB(i do.Injector) (*DB, error) {
 
 func (d *DB) CreateDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
+	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
 	if err != nil {
 		return err
 	}
@@ -64,17 +64,12 @@ func (d *DB) CreateDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	err = d.gormDB.Exec(fmt.Sprintf("CREATE DATABASE %s", d.config.Database.Sql.Name)).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("CREATE DATABASE %s", d.config.Database.Sql.Name)).Error
 }
 
 func (d *DB) DropDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
+	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.Database.Sql.Name).Scan(&exists).Error
 	if err != nil {
 		return err
 	}
@@ -83,10 +78,5 @@ func (d *DB) DropDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	err = d.gormDB.Exec(fmt.Sprintf("DROP DATABASE %s", d.config.Database.Sql.Name)).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("DROP DATABASE %s", d.config.Database.Sql.Name)).Error
 }
