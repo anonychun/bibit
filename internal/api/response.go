@@ -1,13 +1,14 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
 )
 
 type Response struct {
-	c          *echo.Context
+	echoCtx    *echo.Context
 	statusCode int
 	body       struct {
 		Ok     bool `json:"ok"`
@@ -19,7 +20,7 @@ type Response struct {
 
 func NewResponse(c *echo.Context) *Response {
 	return &Response{
-		c:          c,
+		echoCtx:    c,
 		statusCode: http.StatusOK,
 	}
 }
@@ -56,6 +57,15 @@ func (r *Response) SetErrors(err error) *Response {
 		r.SetStatus(e.Code)
 		r.body.Errors = map[string]string{"message": e.Message}
 	default:
+		var sc echo.HTTPStatusCoder
+		if errors.As(err, &sc) {
+			if statusCode := sc.StatusCode(); statusCode != 0 {
+				r.SetStatus(statusCode)
+				r.body.Errors = map[string]string{"message": e.Error()}
+				break
+			}
+		}
+
 		r.SetStatus(http.StatusInternalServerError)
 		r.body.Errors = map[string]string{"message": "Something went wrong"}
 	}
@@ -71,7 +81,7 @@ func (r *Response) Send() error {
 		r.body.Data = nil
 	}
 
-	return r.c.JSON(r.statusCode, r.body)
+	return r.echoCtx.JSON(r.statusCode, r.body)
 }
 
 func (r *Response) SendMessage(message string) error {
