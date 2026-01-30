@@ -196,10 +196,11 @@ func Start(ctx context.Context) error {
 ### 5. **Error Handling Improvements**
 
 #### 5.1 Don't Expose Internal Errors
-The current error handler exposes "Something went wrong" for internal errors. Consider adding:
+The current error handler exposes "Something went wrong" for internal errors, which is good. Consider adding logging:
 
 ```go
 // internal/api/error.go
+// Note: This project uses Echo v5 which uses *echo.Context (pointer)
 func HttpErrorHandler(c *echo.Context, err error) {
     // Log the actual error for debugging
     log.Printf("Error: %v", err)  // Use proper logger in production
@@ -294,6 +295,7 @@ Then add annotations to handlers.
 The current `/up` endpoint returns nothing. Improve it:
 
 ```go
+// Note: This project uses Echo v5 which uses *echo.Context (pointer)
 e.GET("/up", func(c *echo.Context) error {
     return c.JSON(http.StatusOK, map[string]any{
         "status": "healthy",
