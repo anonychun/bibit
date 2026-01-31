@@ -46,14 +46,16 @@ func init() {
 	do.Provide(bootstrap.Injector, NewUsecase)
 }
 
-type Usecase interface {
+type IUsecase interface {
 }
 
-type UsecaseImpl struct {
+type Usecase struct {
 }
 
-func NewUsecase(i do.Injector) (Usecase, error) {
-	return &UsecaseImpl{}, nil
+var _ IUsecase = (*Usecase)(nil)
+
+func NewUsecase(i do.Injector) (*Usecase, error) {
+	return &Usecase{}, nil
 }
 `
 
@@ -68,16 +70,18 @@ func init() {
 	do.Provide(bootstrap.Injector, NewHandler)
 }
 
-type Handler interface {
+type IHandler interface {
 }
 
-type HandlerImpl struct {
-	usecase Usecase
+type Handler struct {
+	usecase IUsecase
 }
 
-func NewHandler(i do.Injector) (Handler, error) {
-	return &HandlerImpl{
-		usecase: do.MustInvoke[Usecase](i),
+var _ IHandler = (*Handler)(nil)
+
+func NewHandler(i do.Injector) (*Handler, error) {
+	return &Handler{
+		usecase: do.MustInvoke[*Usecase](i),
 	}, nil
 }
 `

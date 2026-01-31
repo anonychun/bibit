@@ -29,7 +29,7 @@ const repositoryTemplate = `package {{.PackageName}}
 
 import (
 	"{{.ModuleName}}/internal/bootstrap"
-	"{{.ModuleName}}/internal/db"
+	dbSql "{{.ModuleName}}/internal/db/sql"
 	"github.com/samber/do/v2"
 )
 
@@ -37,16 +37,18 @@ func init() {
 	do.Provide(bootstrap.Injector, NewRepository)
 }
 
-type Repository interface {
+type IRepository interface {
 }
 
-type RepositoryImpl struct {
-	sql db.Sql
+type Repository struct {
+	sqlDB dbSql.IDB
 }
 
-func NewRepository(i do.Injector) (Repository, error) {
-	return &RepositoryImpl{
-		sql: do.MustInvoke[db.Sql](i),
+var _ IRepository = (*Repository)(nil)
+
+func NewRepository(i do.Injector) (*Repository, error) {
+	return &Repository{
+		sqlDB: do.MustInvoke[*dbSql.PostgresDB](i),
 	}, nil
 }
 `
