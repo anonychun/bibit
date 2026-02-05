@@ -28,6 +28,8 @@ func GenerateRepository(name string) error {
 const repositoryTemplate = `package {{.PackageName}}
 
 import (
+	"context"
+
 	"{{.ModuleName}}/internal/bootstrap"
 	dbSql "{{.ModuleName}}/internal/db/sql"
 	"github.com/samber/do/v2"
