@@ -2,6 +2,7 @@ package migrator
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
@@ -9,9 +10,7 @@ import (
 	"github.com/anonychun/bibit/migrations"
 	"github.com/pressly/goose/v3"
 	"github.com/samber/do/v2"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 func init() {
@@ -31,25 +30,16 @@ var _ IDB = (*DB)(nil)
 
 func NewDB(i do.Injector) (*DB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.DB.Sql.Host,
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DB.Sql.User,
 		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Name,
+		cfg.DB.Sql.Host,
 		cfg.DB.Sql.Port,
+		cfg.DB.Sql.Name,
 	)
 
-	gormConfig := &gorm.Config{
-		QueryFields: true,
-		Logger:      logger.Default.LogMode(logger.Info),
-	}
-
-	gormDB, err := gorm.Open(postgres.Open(dsn), gormConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	sqlDB, err := gormDB.DB()
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	err := sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}

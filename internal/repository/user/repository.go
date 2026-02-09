@@ -34,7 +34,7 @@ func NewRepository(i do.Injector) (*Repository, error) {
 
 func (r *Repository) FindById(ctx context.Context, id string) (*entity.User, error) {
 	user := &entity.User{}
-	err := r.sqlDB.DB(ctx).First(user, "id = ?", id).Error
+	err := r.sqlDB.DB(ctx).NewSelect().Model(user).Where("id = ?", id).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (r *Repository) FindById(ctx context.Context, id string) (*entity.User, err
 
 func (r *Repository) FindByEmailAddress(ctx context.Context, emailAddress string) (*entity.User, error) {
 	user := &entity.User{}
-	err := r.sqlDB.DB(ctx).First(user, "email_address = ?", emailAddress).Error
+	err := r.sqlDB.DB(ctx).NewSelect().Model(user).Where("email_address = ?", emailAddress).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +53,10 @@ func (r *Repository) FindByEmailAddress(ctx context.Context, emailAddress string
 }
 
 func (r *Repository) Create(ctx context.Context, user *entity.User) error {
-	return r.sqlDB.DB(ctx).Create(user).Error
+	_, err := r.sqlDB.DB(ctx).NewInsert().Model(user).Exec(ctx)
+	return err
 }
 
 func (r *Repository) ExistsByEmailAddress(ctx context.Context, emailAddress string) (bool, error) {
-	var exists bool
-	err := r.sqlDB.DB(ctx).Raw("SELECT 1 FROM users WHERE email_address = ?", emailAddress).Scan(&exists).Error
-	return exists, err
+	return r.sqlDB.DB(ctx).NewSelect().Model(&entity.User{}).Where("email_address = ?", emailAddress).Exists(ctx)
 }

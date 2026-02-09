@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/consts"
@@ -46,7 +47,7 @@ func (u *Usecase) SignIn(ctx context.Context, req SignInRequest) (*SignInRespons
 	}
 
 	admin, err := u.adminRepository.FindByEmailAddress(ctx, req.EmailAddress)
-	if err == consts.ErrRecordNotFound {
+	if err == sql.ErrNoRows {
 		return nil, consts.ErrInvalidCredentials
 	} else if err != nil {
 		return nil, err

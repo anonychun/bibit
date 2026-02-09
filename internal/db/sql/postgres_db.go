@@ -4,15 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/internal/current"
 	"github.com/samber/do/v2"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func init() {
@@ -20,60 +22,56 @@ func init() {
 }
 
 type PostgresDB struct {
-	gormDB *gorm.DB
-	sqlDB  *sql.DB
+	bunDB *bun.DB
+	sqlDB *sql.DB
 }
 
 var _ IDB = (*PostgresDB)(nil)
 
 func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.DB.Sql.Host,
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DB.Sql.User,
 		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Name,
+		cfg.DB.Sql.Host,
 		cfg.DB.Sql.Port,
+		cfg.DB.Sql.Name,
 	)
 
-	gormConfig := &gorm.Config{
-		QueryFields: true,
-		Logger:      logger.Default.LogMode(logger.Info),
-	}
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(
+		pgdriver.WithDSN(dsn),
+	))
 
-	gormDB, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	maxOpenConns := 4 * runtime.GOMAXPROCS(0)
+	sqlDB.SetMaxIdleConns(maxOpenConns)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+	maxLifeTime := 5 * time.Minute
+	sqlDB.SetConnMaxIdleTime(maxLifeTime)
+	sqlDB.SetConnMaxLifetime(maxLifeTime)
+
+	err := sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}
 
-	sqlDB, err := gormDB.DB()
-	if err != nil {
-		return nil, err
-	}
-
-	sqlDB.SetMaxIdleConns(25)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(5 * time.Minute)
-	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
-
-	err = sqlDB.Ping()
-	if err != nil {
-		return nil, err
-	}
+	bunDB := bun.NewDB(sqlDB, pgdialect.New())
+	bunDB.AddQueryHook(bundebug.NewQueryHook(
+		bundebug.WithVerbose(true),
+	))
 
 	return &PostgresDB{
-		gormDB: gormDB,
-		sqlDB:  sqlDB,
+		bunDB: bunDB,
+		sqlDB: sqlDB,
 	}, nil
 }
 
-func (pd *PostgresDB) DB(ctx context.Context) *gorm.DB {
+func (pd *PostgresDB) DB(ctx context.Context) bun.IDB {
 	tx := current.Tx(ctx)
 	if tx != nil {
 		return tx
 	}
 
-	return pd.gormDB.WithContext(ctx)
+	return pd.bunDB
 }
 
 func (pd *PostgresDB) SqlDB(ctx context.Context) *sql.DB {

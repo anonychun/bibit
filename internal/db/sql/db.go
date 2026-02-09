@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	"gorm.io/gorm"
+	"github.com/uptrace/bun"
 )
 
 type IDB interface {
-	DB(ctx context.Context) *gorm.DB
+	DB(ctx context.Context) bun.IDB
 	SqlDB(ctx context.Context) *sql.DB
 }

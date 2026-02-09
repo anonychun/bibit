@@ -32,7 +32,7 @@ func NewRepository(i do.Injector) (*Repository, error) {
 
 func (r *Repository) FindById(ctx context.Context, id string) (*entity.Admin, error) {
 	admin := &entity.Admin{}
-	err := r.sqlDB.DB(ctx).First(admin, "id = ?", id).Error
+	err := r.sqlDB.DB(ctx).NewSelect().Model(admin).Where("id = ?", id).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (r *Repository) FindById(ctx context.Context, id string) (*entity.Admin, er
 
 func (r *Repository) FindByEmailAddress(ctx context.Context, emailAddress string) (*entity.Admin, error) {
 	admin := &entity.Admin{}
-	err := r.sqlDB.DB(ctx).First(admin, "email_address = ?", emailAddress).Error
+	err := r.sqlDB.DB(ctx).NewSelect().Model(admin).Where("email_address = ?", emailAddress).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}

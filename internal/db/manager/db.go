@@ -2,14 +2,16 @@ package manager
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/samber/do/v2"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func init() {
@@ -22,7 +24,7 @@ type IDB interface {
 }
 
 type DB struct {
-	gormDB *gorm.DB
+	bunDB  *bun.DB
 	config *config.Config
 }
 
@@ -30,32 +32,33 @@ var _ IDB = (*DB)(nil)
 
 func NewDB(i do.Injector) (*DB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%d sslmode=disable",
-		cfg.DB.Sql.Host,
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/postgres?sslmode=disable",
 		cfg.DB.Sql.User,
 		cfg.DB.Sql.Password,
+		cfg.DB.Sql.Host,
 		cfg.DB.Sql.Port,
 	)
 
-	gormConfig := &gorm.Config{
-		QueryFields: true,
-		Logger:      logger.Default.LogMode(logger.Info),
-	}
-
-	gormDB, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	err := sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}
 
+	bunDB := bun.NewDB(sqlDB, pgdialect.New())
+	bunDB.AddQueryHook(bundebug.NewQueryHook(
+		bundebug.WithVerbose(true),
+	))
+
 	return &DB{
-		gormDB: gormDB,
+		bunDB:  bunDB,
 		config: cfg,
 	}, nil
 }
 
 func (d *DB) CreateDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.DB.Sql.Name).Scan(&exists).Error
+	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", d.config.DB.Sql.Name).Scan(ctx, &exists)
 	if err != nil {
 		return err
 	}
@@ -64,12 +67,13 @@ func (d *DB) CreateDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("CREATE DATABASE %s", d.config.DB.Sql.Name)).Error
+	_, err = d.bunDB.NewRaw("CREATE DATABASE ?", bun.Ident(d.config.DB.Sql.Name)).Exec(ctx)
+	return err
 }
 
 func (d *DB) DropDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.gormDB.WithContext(ctx).Raw("SELECT 1 FROM pg_database WHERE datname = ?", d.config.DB.Sql.Name).Scan(&exists).Error
+	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", d.config.DB.Sql.Name).Scan(ctx, &exists)
 	if err != nil {
 		return err
 	}
@@ -78,5 +82,6 @@ func (d *DB) DropDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	return d.gormDB.WithContext(ctx).Exec(fmt.Sprintf("DROP DATABASE %s", d.config.DB.Sql.Name)).Error
+	_, err = d.bunDB.NewRaw("DROP DATABASE ?", bun.Ident(d.config.DB.Sql.Name)).Exec(ctx)
+	return err
 }

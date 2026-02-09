@@ -2,15 +2,17 @@ package seeder
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/internal/entity"
 	"github.com/samber/do/v2"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func init() {
@@ -22,33 +24,34 @@ type IDB interface {
 }
 
 type DB struct {
-	gormDB *gorm.DB
+	bunDB *bun.DB
 }
 
 var _ IDB = (*DB)(nil)
 
 func NewDB(i do.Injector) (*DB, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.DB.Sql.Host,
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DB.Sql.User,
 		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Name,
+		cfg.DB.Sql.Host,
 		cfg.DB.Sql.Port,
+		cfg.DB.Sql.Name,
 	)
 
-	gormConfig := &gorm.Config{
-		QueryFields: true,
-		Logger:      logger.Default.LogMode(logger.Info),
-	}
-
-	gormDB, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	err := sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}
 
+	bunDB := bun.NewDB(sqlDB, pgdialect.New())
+	bunDB.AddQueryHook(bundebug.NewQueryHook(
+		bundebug.WithVerbose(true),
+	))
+
 	return &DB{
-		gormDB: gormDB,
+		bunDB: bunDB,
 	}, nil
 }
 
@@ -64,14 +67,16 @@ func (d *DB) Seed(ctx context.Context) error {
 		return err
 	}
 
-	err = d.gormDB.WithContext(ctx).First(defaultAdmin, "email_address = ?", defaultAdmin.EmailAddress).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	defaultAdminExists, err := d.bunDB.NewSelect().Model(defaultAdmin).Where("email_address = ?", defaultAdmin.EmailAddress).Exists(ctx)
+	if err != nil {
 		return err
 	}
 
-	err = d.gormDB.WithContext(ctx).Save(defaultAdmin).Error
-	if err != nil {
-		return err
+	if !defaultAdminExists {
+		_, err = d.bunDB.NewInsert().Model(defaultAdmin).Exec(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

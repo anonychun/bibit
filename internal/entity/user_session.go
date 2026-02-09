@@ -9,7 +9,7 @@ type UserSession struct {
 	Base
 
 	UserId    uuid.UUID
-	User      *User
+	User      *User `bun:"rel:belongs-to,join:user_id=id"`
 	Token     string
 	IpAddress string
 	UserAgent string

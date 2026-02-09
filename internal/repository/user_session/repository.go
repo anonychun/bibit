@@ -33,7 +33,7 @@ func NewRepository(i do.Injector) (*Repository, error) {
 
 func (r *Repository) FindByToken(ctx context.Context, token string) (*entity.UserSession, error) {
 	userSession := &entity.UserSession{}
-	err := r.sqlDB.DB(ctx).First(userSession, "token = ?", token).Error
+	err := r.sqlDB.DB(ctx).NewSelect().Model(userSession).Where("token = ?", token).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,9 +42,11 @@ func (r *Repository) FindByToken(ctx context.Context, token string) (*entity.Use
 }
 
 func (r *Repository) Create(ctx context.Context, userSession *entity.UserSession) error {
-	return r.sqlDB.DB(ctx).Create(userSession).Error
+	_, err := r.sqlDB.DB(ctx).NewInsert().Model(userSession).Exec(ctx)
+	return err
 }
 
 func (r *Repository) DeleteByToken(ctx context.Context, token string) error {
-	return r.sqlDB.DB(ctx).Delete(&entity.UserSession{}, "token = ?", token).Error
+	_, err := r.sqlDB.DB(ctx).NewDelete().Model(&entity.UserSession{}).Where("token = ?", token).Exec(ctx)
+	return err
 }

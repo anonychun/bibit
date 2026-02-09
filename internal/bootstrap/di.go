@@ -20,6 +20,7 @@ func RunCommand(ctx context.Context, cmd *cli.Command) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
+		defer stop()
 		return cmd.Run(ctx, os.Args)
 	})
 

@@ -5,8 +5,8 @@ CREATE TABLE attachments (
 	object_name TEXT NOT NULL UNIQUE,
 	file_name TEXT NOT NULL,
 	byte_size BIGINT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE admins (
@@ -14,8 +14,8 @@ CREATE TABLE admins (
 	name TEXT NOT NULL,
 	email_address TEXT NOT NULL UNIQUE,
 	password_digest TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE admin_sessions (
@@ -24,8 +24,8 @@ CREATE TABLE admin_sessions (
 	token TEXT NOT NULL UNIQUE,
 	ip_address TEXT NOT NULL,
 	user_agent TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE users (
@@ -33,8 +33,8 @@ CREATE TABLE users (
 	name TEXT NOT NULL,
 	email_address TEXT NOT NULL UNIQUE,
 	password_digest TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE user_sessions (
@@ -43,8 +43,8 @@ CREATE TABLE user_sessions (
 	token TEXT NOT NULL UNIQUE,
 	ip_address TEXT NOT NULL,
 	user_agent TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- +goose StatementEnd
 
