@@ -3,14 +3,17 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
+	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/worker"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	cmd := &cli.Command{}
+	cmd := &cli.Command{
+		Name:  "worker",
+		Usage: "Manage the worker process",
+	}
 
 	cmd.Commands = []*cli.Command{
 		{
@@ -22,7 +25,7 @@ func main() {
 		},
 	}
 
-	err := cmd.Run(context.Background(), os.Args)
+	err := bootstrap.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}

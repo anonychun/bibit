@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbManager "github.com/anonychun/bibit/internal/db/manager"
@@ -14,25 +13,12 @@ import (
 )
 
 func main() {
-	cmd := &cli.Command{}
+	cmd := &cli.Command{
+		Name:  "db",
+		Usage: "Manage the database",
+	}
 
 	cmd.Commands = []*cli.Command{
-		{
-			Name:  "migrate",
-			Usage: "Apply all pending migrations",
-			Action: func(ctx context.Context, c *cli.Command) error {
-				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
-				return migratorDB.Migrate(ctx)
-			},
-		},
-		{
-			Name:  "rollback",
-			Usage: "Revert the last applied migration",
-			Action: func(ctx context.Context, c *cli.Command) error {
-				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
-				return migratorDB.Rollback(ctx)
-			},
-		},
 		{
 			Name:  "create",
 			Usage: "Create a new database",
@@ -47,6 +33,22 @@ func main() {
 			Action: func(ctx context.Context, c *cli.Command) error {
 				managerDB := do.MustInvoke[*dbManager.DB](bootstrap.Injector)
 				return managerDB.DropDatabase(ctx)
+			},
+		},
+		{
+			Name:  "migrate",
+			Usage: "Apply all pending migrations",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				return migratorDB.Migrate(ctx)
+			},
+		},
+		{
+			Name:  "rollback",
+			Usage: "Revert the last applied migration",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				return migratorDB.Rollback(ctx)
 			},
 		},
 		{
@@ -104,7 +106,7 @@ func main() {
 		},
 	}
 
-	err := cmd.Run(context.Background(), os.Args)
+	err := bootstrap.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}

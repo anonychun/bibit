@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
 
 	"github.com/anonychun/bibit/cmd/generate/internal"
+	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	cmd := &cli.Command{}
+	cmd := &cli.Command{
+		Name:  "generate",
+		Usage: "Generate project components",
+	}
 
 	cmd.Commands = []*cli.Command{
 		{
@@ -88,7 +91,7 @@ func main() {
 		},
 	}
 
-	err := cmd.Run(context.Background(), os.Args)
+	err := bootstrap.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}
