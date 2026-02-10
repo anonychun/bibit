@@ -10,10 +10,12 @@ import (
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/internal/current"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/samber/do/v2"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
@@ -29,6 +31,7 @@ type PostgresDB struct {
 var _ IDB = (*PostgresDB)(nil)
 
 func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
+	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DB.Sql.User,
@@ -38,18 +41,26 @@ func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 		cfg.DB.Sql.Name,
 	)
 
-	sqlDB := sql.OpenDB(pgdriver.NewConnector(
-		pgdriver.WithDSN(dsn),
-	))
+	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	pgxConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
 	maxOpenConns := 4 * runtime.GOMAXPROCS(0)
-	sqlDB.SetMaxIdleConns(maxOpenConns)
-	sqlDB.SetMaxOpenConns(maxOpenConns)
-	maxLifeTime := 5 * time.Minute
-	sqlDB.SetConnMaxIdleTime(maxLifeTime)
-	sqlDB.SetConnMaxLifetime(maxLifeTime)
+	pgxConfig.MaxConns = int32(maxOpenConns)
 
-	err := sqlDB.Ping()
+	maxLifeTime := 5 * time.Minute
+	pgxConfig.MaxConnIdleTime = maxLifeTime
+	pgxConfig.MaxConnLifetime = maxLifeTime
+
+	pgxPool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB := stdlib.OpenDBFromPool(pgxPool)
+	err = sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}
