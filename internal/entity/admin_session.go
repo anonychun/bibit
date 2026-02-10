@@ -9,7 +9,7 @@ type AdminSession struct {
 	Base
 
 	AdminId   uuid.UUID
-	Admin     *Admin
+	Admin     *Admin `bun:"rel:belongs-to,join:admin_id=id"`
 	Token     string
 	IpAddress string
 	UserAgent string
