@@ -2,15 +2,16 @@ package migrator
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/migrations"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"github.com/samber/do/v2"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 func init() {
@@ -29,6 +30,7 @@ type DB struct {
 var _ IDB = (*DB)(nil)
 
 func NewDB(i do.Injector) (*DB, error) {
+	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DB.Sql.User,
@@ -38,8 +40,19 @@ func NewDB(i do.Injector) (*DB, error) {
 		cfg.DB.Sql.Name,
 	)
 
-	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-	err := sqlDB.Ping()
+	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	pgxConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+
+	pgxPool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB := stdlib.OpenDBFromPool(pgxPool)
+	err = sqlDB.Ping()
 	if err != nil {
 		return nil, err
 	}
