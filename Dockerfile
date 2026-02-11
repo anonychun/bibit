@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.25.1-trixie AS build
+FROM docker.io/library/golang:1.26.0-trixie AS build
 WORKDIR /app
 
 COPY go.mod go.sum ./
