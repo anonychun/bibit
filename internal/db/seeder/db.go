@@ -3,6 +3,7 @@ package seeder
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
@@ -25,7 +26,8 @@ type IDB interface {
 }
 
 type DB struct {
-	bunDB *bun.DB
+	pgxPool *pgxpool.Pool
+	bunDB   *bun.DB
 }
 
 var _ IDB = (*DB)(nil)
@@ -33,15 +35,15 @@ var _ IDB = (*DB)(nil)
 func NewDB(i do.Injector) (*DB, error) {
 	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.DB.Sql.User,
-		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Host,
-		cfg.DB.Sql.Port,
-		cfg.DB.Sql.Name,
-	)
+	dsn := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.DB.Sql.User, cfg.DB.Sql.Password),
+		Host:     fmt.Sprintf("%s:%d", cfg.DB.Sql.Host, cfg.DB.Sql.Port),
+		Path:     cfg.DB.Sql.Name,
+		RawQuery: "sslmode=disable",
+	}
 
-	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	pgxConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +66,8 @@ func NewDB(i do.Injector) (*DB, error) {
 	))
 
 	return &DB{
-		bunDB: bunDB,
+		pgxPool: pgxPool,
+		bunDB:   bunDB,
 	}, nil
 }
 
@@ -92,5 +95,10 @@ func (d *DB) Seed(ctx context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+func (d *DB) Shutdown(ctx context.Context) error {
+	d.pgxPool.Close()
 	return nil
 }

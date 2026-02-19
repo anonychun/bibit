@@ -3,6 +3,7 @@ package migrator
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
@@ -24,6 +25,7 @@ type IDB interface {
 }
 
 type DB struct {
+	pgxPool  *pgxpool.Pool
 	provider *goose.Provider
 }
 
@@ -32,15 +34,15 @@ var _ IDB = (*DB)(nil)
 func NewDB(i do.Injector) (*DB, error) {
 	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.DB.Sql.User,
-		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Host,
-		cfg.DB.Sql.Port,
-		cfg.DB.Sql.Name,
-	)
+	dsn := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.DB.Sql.User, cfg.DB.Sql.Password),
+		Host:     fmt.Sprintf("%s:%d", cfg.DB.Sql.Host, cfg.DB.Sql.Port),
+		Path:     cfg.DB.Sql.Name,
+		RawQuery: "sslmode=disable",
+	}
 
-	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	pgxConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +70,7 @@ func NewDB(i do.Injector) (*DB, error) {
 	}
 
 	return &DB{
+		pgxPool:  pgxPool,
 		provider: provider,
 	}, nil
 }
@@ -80,4 +83,9 @@ func (d *DB) Migrate(ctx context.Context) error {
 func (d *DB) Rollback(ctx context.Context) error {
 	_, err := d.provider.Down(ctx)
 	return err
+}
+
+func (d *DB) Shutdown(ctx context.Context) error {
+	d.pgxPool.Close()
+	return nil
 }

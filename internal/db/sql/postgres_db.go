@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"runtime"
 	"time"
 
@@ -24,8 +25,9 @@ func init() {
 }
 
 type PostgresDB struct {
-	bunDB *bun.DB
-	sqlDB *sql.DB
+	pgxPool *pgxpool.Pool
+	sqlDB   *sql.DB
+	bunDB   *bun.DB
 }
 
 var _ IDB = (*PostgresDB)(nil)
@@ -33,15 +35,15 @@ var _ IDB = (*PostgresDB)(nil)
 func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	ctx := context.Background()
 	cfg := do.MustInvoke[*config.Config](i)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.DB.Sql.User,
-		cfg.DB.Sql.Password,
-		cfg.DB.Sql.Host,
-		cfg.DB.Sql.Port,
-		cfg.DB.Sql.Name,
-	)
+	dsn := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(cfg.DB.Sql.User, cfg.DB.Sql.Password),
+		Host:     fmt.Sprintf("%s:%d", cfg.DB.Sql.Host, cfg.DB.Sql.Port),
+		Path:     cfg.DB.Sql.Name,
+		RawQuery: "sslmode=disable",
+	}
 
-	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	pgxConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +52,8 @@ func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	maxOpenConns := 4 * runtime.GOMAXPROCS(0)
 	pgxConfig.MaxConns = int32(maxOpenConns)
 
-	maxLifeTime := 5 * time.Minute
-	pgxConfig.MaxConnIdleTime = maxLifeTime
-	pgxConfig.MaxConnLifetime = maxLifeTime
+	pgxConfig.MaxConnIdleTime = 5 * time.Minute
+	pgxConfig.MaxConnLifetime = 30 * time.Minute
 
 	pgxPool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
@@ -60,7 +61,7 @@ func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	}
 
 	sqlDB := stdlib.OpenDBFromPool(pgxPool)
-	err = sqlDB.Ping()
+	err = sqlDB.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +72,9 @@ func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	))
 
 	return &PostgresDB{
-		bunDB: bunDB,
-		sqlDB: sqlDB,
+		pgxPool: pgxPool,
+		sqlDB:   sqlDB,
+		bunDB:   bunDB,
 	}, nil
 }
 
@@ -87,4 +89,9 @@ func (pd *PostgresDB) DB(ctx context.Context) bun.IDB {
 
 func (pd *PostgresDB) SqlDB(ctx context.Context) *sql.DB {
 	return pd.sqlDB
+}
+
+func (pd *PostgresDB) Shutdown(ctx context.Context) error {
+	pd.pgxPool.Close()
+	return nil
 }
