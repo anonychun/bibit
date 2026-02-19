@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -57,17 +56,14 @@ func (r *Response) SetErrors(err error) *Response {
 		r.SetStatus(e.Code)
 		r.body.Errors = map[string]string{"message": e.Message}
 	default:
-		var sc echo.HTTPStatusCoder
-		if errors.As(err, &sc) {
-			if statusCode := sc.StatusCode(); statusCode != 0 {
-				r.SetStatus(statusCode)
-				r.body.Errors = map[string]string{"message": e.Error()}
-				break
-			}
-		}
-
 		r.SetStatus(http.StatusInternalServerError)
 		r.body.Errors = map[string]string{"message": "Something went wrong"}
+
+		echoStatusCode := echo.StatusCode(err)
+		if echoStatusCode != 0 {
+			r.SetStatus(echoStatusCode)
+			r.body.Errors = map[string]string{"message": err.Error()}
+		}
 	}
 
 	return r
