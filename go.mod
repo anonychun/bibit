@@ -15,11 +15,11 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo/v5 v5.0.4
 	github.com/oklog/ulid/v2 v2.1.1
-	github.com/pressly/goose/v3 v3.26.0
+	github.com/pressly/goose/v3 v3.27.0
 	github.com/samber/do/v2 v2.0.0
-	github.com/uptrace/bun v1.2.16
-	github.com/uptrace/bun/dialect/pgdialect v1.2.16
-	github.com/uptrace/bun/extra/bundebug v1.2.16
+	github.com/uptrace/bun v1.2.17
+	github.com/uptrace/bun/dialect/pgdialect v1.2.17
+	github.com/uptrace/bun/extra/bundebug v1.2.17
 	github.com/urfave/cli/v3 v3.6.2
 	golang.org/x/crypto v0.48.0
 	golang.org/x/sync v0.19.0
@@ -40,7 +40,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.6 // indirect
-	github.com/aws/smithy-go v1.24.0 // indirect
+	github.com/aws/smithy-go v1.24.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gookit/filter v1.2.3 // indirect
 	github.com/gookit/goutil v0.7.3 // indirect
