@@ -3,10 +3,12 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
+	"github.com/anonychun/bibit/internal/logger"
 	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
 	usecaseApiV1AdminAuth "github.com/anonychun/bibit/internal/usecase/api/v1/admin/auth"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
@@ -25,6 +27,7 @@ type IServer interface {
 type Server struct {
 	echo   *echo.Echo
 	server *http.Server
+	logger logger.ILogger
 
 	authMiddleware middlewareAuth.IMiddleware
 
@@ -46,6 +49,7 @@ func NewServer(i do.Injector) (*Server, error) {
 	return &Server{
 		echo:   e,
 		server: srv,
+		logger: do.MustInvoke[*logger.Logger](i),
 
 		authMiddleware: do.MustInvoke[*middlewareAuth.Middleware](i),
 
@@ -60,6 +64,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
+	s.logger.Log().Info("starting server", slog.String("addr", s.server.Addr))
 	err = s.server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err
