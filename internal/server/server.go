@@ -6,10 +6,12 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/internal/logger"
 	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
+	middlewareLogger "github.com/anonychun/bibit/internal/middleware/logger"
 	usecaseApiV1AdminAuth "github.com/anonychun/bibit/internal/usecase/api/v1/admin/auth"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	"github.com/labstack/echo/v5"
@@ -29,7 +31,8 @@ type Server struct {
 	server *http.Server
 	logger logger.ILogger
 
-	authMiddleware middlewareAuth.IMiddleware
+	authMiddleware   middlewareAuth.IMiddleware
+	loggerMiddleware middlewareLogger.IMiddleware
 
 	apiV1AdminAuthHandler usecaseApiV1AdminAuth.IHandler
 	apiV1AppAuthHandler   usecaseApiV1AppAuth.IHandler
@@ -39,8 +42,13 @@ var _ IServer = (*Server)(nil)
 
 func NewServer(i do.Injector) (*Server, error) {
 	cfg := do.MustInvoke[*config.Config](i)
+	l := do.MustInvoke[*logger.Logger](i)
 
-	e := echo.New()
+	e := echo.NewWithConfig(echo.Config{
+		Logger:           l.Log(),
+		HTTPErrorHandler: api.HttpErrorHandler,
+	})
+
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler: e,
@@ -49,9 +57,10 @@ func NewServer(i do.Injector) (*Server, error) {
 	return &Server{
 		echo:   e,
 		server: srv,
-		logger: do.MustInvoke[*logger.Logger](i),
+		logger: l,
 
-		authMiddleware: do.MustInvoke[*middlewareAuth.Middleware](i),
+		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
+		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
 
 		apiV1AdminAuthHandler: do.MustInvoke[*usecaseApiV1AdminAuth.Handler](i),
 		apiV1AppAuthHandler:   do.MustInvoke[*usecaseApiV1AppAuth.Handler](i),

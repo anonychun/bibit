@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/public"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -12,10 +11,9 @@ func namespace(e *echo.Group, path string, f func(e *echo.Group)) {
 }
 
 func (s *Server) routes() error {
-	s.echo.HTTPErrorHandler = api.HttpErrorHandler
 	s.echo.Use(middleware.Recover())
 	s.echo.Use(middleware.RequestID())
-	// s.echo.Use(middleware.RequestLogger())
+	s.echo.Use(s.loggerMiddleware.RequestLogger)
 
 	apiRouter := s.echo.Group("/api")
 	namespace(apiRouter, "/v1", func(e *echo.Group) {
