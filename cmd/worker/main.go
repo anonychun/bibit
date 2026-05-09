@@ -6,6 +6,7 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/worker"
+	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )
 
@@ -20,7 +21,8 @@ func main() {
 			Name:  "start",
 			Usage: "Start the worker",
 			Action: func(ctx context.Context, c *cli.Command) error {
-				return worker.Start(ctx)
+				wrk := do.MustInvoke[*worker.Worker](bootstrap.Injector)
+				return wrk.Start(ctx)
 			},
 		},
 	}

@@ -83,5 +83,6 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
+	s.logger.Log().Info("shutting down server")
 	return s.server.Shutdown(ctx)
 }

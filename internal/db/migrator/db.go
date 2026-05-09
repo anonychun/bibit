@@ -8,7 +8,6 @@ import (
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/migrations"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -46,19 +45,18 @@ func NewDB(i do.Injector) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	pgxConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
 	pgxPool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	sqlDB := stdlib.OpenDBFromPool(pgxPool)
-	err = sqlDB.Ping()
+	err = pgxPool.Ping(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	sqlDB := stdlib.OpenDBFromPool(pgxPool)
 	provider, err := goose.NewProvider(
 		"postgres",
 		sqlDB,

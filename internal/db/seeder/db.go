@@ -54,12 +54,12 @@ func NewDB(i do.Injector) (*DB, error) {
 		return nil, err
 	}
 
-	sqlDB := stdlib.OpenDBFromPool(pgxPool)
-	err = sqlDB.Ping()
+	err = pgxPool.Ping(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	sqlDB := stdlib.OpenDBFromPool(pgxPool)
 	bunDB := bun.NewDB(sqlDB, pgdialect.New())
 	bunDB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),

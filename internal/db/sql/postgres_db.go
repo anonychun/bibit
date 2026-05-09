@@ -2,7 +2,6 @@ package sql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/url"
 	"runtime"
@@ -26,7 +25,6 @@ func init() {
 
 type PostgresDB struct {
 	pgxPool *pgxpool.Pool
-	sqlDB   *sql.DB
 	bunDB   *bun.DB
 }
 
@@ -60,21 +58,20 @@ func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 		return nil, err
 	}
 
-	sqlDB := stdlib.OpenDBFromPool(pgxPool)
-	err = sqlDB.PingContext(ctx)
+	err = pgxPool.Ping(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	sqlDB := stdlib.OpenDBFromPool(pgxPool)
 	bunDB := bun.NewDB(sqlDB, pgdialect.New())
 	bunDB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),
 	))
 
 	return &PostgresDB{
-		pgxPool: pgxPool,
-		sqlDB:   sqlDB,
 		bunDB:   bunDB,
+		pgxPool: pgxPool,
 	}, nil
 }
 
@@ -87,8 +84,8 @@ func (pd *PostgresDB) DB(ctx context.Context) bun.IDB {
 	return pd.bunDB
 }
 
-func (pd *PostgresDB) SqlDB(ctx context.Context) *sql.DB {
-	return pd.sqlDB
+func (pd *PostgresDB) PgxPool(ctx context.Context) *pgxpool.Pool {
+	return pd.pgxPool
 }
 
 func (pd *PostgresDB) Shutdown(ctx context.Context) error {
