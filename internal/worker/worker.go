@@ -18,7 +18,6 @@ type IWorker interface {
 }
 
 type Worker struct {
-	stopSig     chan struct{}
 	riverClient clientRiver.IClient
 	logger      logger.ILogger
 }
@@ -27,7 +26,6 @@ var _ IWorker = (*Worker)(nil)
 
 func NewWorker(i do.Injector) (*Worker, error) {
 	return &Worker{
-		stopSig:     make(chan struct{}, 1),
 		riverClient: do.MustInvoke[*clientRiver.Client](i),
 		logger:      do.MustInvoke[*logger.Logger](i),
 	}, nil
@@ -40,12 +38,11 @@ func (w *Worker) Start(ctx context.Context) error {
 		return err
 	}
 
-	<-w.stopSig
+	<-w.riverClient.Client().Stopped()
 	return nil
 }
 
 func (w *Worker) Shutdown(ctx context.Context) error {
-	w.stopSig <- struct{}{}
 	w.logger.Log().Info("shutting down worker")
 	return w.riverClient.Client().Stop(ctx)
 }

@@ -15,14 +15,14 @@ require (
 	github.com/labstack/echo/v5 v5.1.1
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/pressly/goose/v3 v3.27.1
-	github.com/riverqueue/river v0.35.1
-	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.35.1
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.35.1
+	github.com/riverqueue/river v0.37.1
+	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.37.1
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.37.1
 	github.com/samber/do/v2 v2.0.0
 	github.com/uptrace/bun v1.2.18
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18
 	github.com/uptrace/bun/extra/bundebug v1.2.18
-	github.com/urfave/cli/v3 v3.8.0
+	github.com/urfave/cli/v3 v3.9.0
 	golang.org/x/crypto v0.51.0
 	golang.org/x/sync v0.20.0
 )
@@ -56,9 +56,9 @@ require (
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
-	github.com/riverqueue/river/riverdriver v0.35.1 // indirect
-	github.com/riverqueue/river/rivershared v0.35.1 // indirect
-	github.com/riverqueue/river/rivertype v0.35.1 // indirect
+	github.com/riverqueue/river/riverdriver v0.37.1 // indirect
+	github.com/riverqueue/river/rivershared v0.37.1 // indirect
+	github.com/riverqueue/river/rivertype v0.37.1 // indirect
 	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
