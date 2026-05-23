@@ -17,14 +17,6 @@ func (s *Server) routes() error {
 
 	apiRouter := s.echo.Group("/api")
 	namespace(apiRouter, "/v1", func(e *echo.Group) {
-		namespace(e, "/admin", func(e *echo.Group) {
-			e.Use(s.authMiddleware.AuthenticateAdmin)
-
-			e.POST("/auth/signin", s.apiV1AdminAuthHandler.SignIn)
-			e.POST("/auth/signout", s.apiV1AdminAuthHandler.SignOut)
-			e.GET("/auth/me", s.apiV1AdminAuthHandler.Me)
-		})
-
 		namespace(e, "/app", func(e *echo.Group) {
 			e.Use(s.authMiddleware.AuthenticateUser)
 

@@ -12,7 +12,6 @@ import (
 	"github.com/anonychun/bibit/internal/logger"
 	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
 	middlewareLogger "github.com/anonychun/bibit/internal/middleware/logger"
-	usecaseApiV1AdminAuth "github.com/anonychun/bibit/internal/usecase/api/v1/admin/auth"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
@@ -34,8 +33,7 @@ type Server struct {
 	authMiddleware   middlewareAuth.IMiddleware
 	loggerMiddleware middlewareLogger.IMiddleware
 
-	apiV1AdminAuthHandler usecaseApiV1AdminAuth.IHandler
-	apiV1AppAuthHandler   usecaseApiV1AppAuth.IHandler
+	apiV1AppAuthHandler usecaseApiV1AppAuth.IHandler
 }
 
 var _ IServer = (*Server)(nil)
@@ -62,8 +60,7 @@ func NewServer(i do.Injector) (*Server, error) {
 		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
 
-		apiV1AdminAuthHandler: do.MustInvoke[*usecaseApiV1AdminAuth.Handler](i),
-		apiV1AppAuthHandler:   do.MustInvoke[*usecaseApiV1AppAuth.Handler](i),
+		apiV1AppAuthHandler: do.MustInvoke[*usecaseApiV1AppAuth.Handler](i),
 	}, nil
 }
 

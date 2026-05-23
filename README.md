@@ -99,6 +99,16 @@ To generate a new repository, run:
 
 E.g., `./bin/generate repository user`.
 
+#### Job
+
+To generate a new background job, run:
+
+```bash
+./bin/generate job <job-name>
+```
+
+E.g., `./bin/generate job hello`.
+
 ### Database
 
 You can manage your database using the provided CLI commands.

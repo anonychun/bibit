@@ -9,25 +9,6 @@ CREATE TABLE attachments (
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE admins (
-	id UUID PRIMARY KEY DEFAULT uuidv7(),
-	name TEXT NOT NULL,
-	email_address TEXT NOT NULL UNIQUE,
-	password_digest TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE admin_sessions (
-	id UUID PRIMARY KEY DEFAULT uuidv7(),
-	admin_id UUID NOT NULL REFERENCES admins(id),
-	token TEXT NOT NULL UNIQUE,
-	ip_address TEXT NOT NULL,
-	user_agent TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 CREATE TABLE users (
 	id UUID PRIMARY KEY DEFAULT uuidv7(),
 	name TEXT NOT NULL,
@@ -53,10 +34,6 @@ CREATE TABLE user_sessions (
 DROP TABLE user_sessions;
 
 DROP TABLE users;
-
-DROP TABLE admin_sessions;
-
-DROP TABLE admins;
 
 DROP TABLE attachments;
 -- +goose StatementEnd

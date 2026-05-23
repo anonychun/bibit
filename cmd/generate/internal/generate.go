@@ -8,6 +8,7 @@ import (
 )
 
 type TemplateData struct {
+	CmdArg      string
 	ModuleName  string
 	PackageName string
 }
@@ -46,5 +47,9 @@ func getModuleName() string {
 		return ""
 	}
 
-	return bi.Deps[0].Path
+	if len(bi.Deps) > 0 && bi.Deps[0].Path != "" {
+		return bi.Deps[0].Path
+	}
+
+	return bi.Path
 }
