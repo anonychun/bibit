@@ -3,15 +3,13 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = ["start"]
-  entrypoint = "goreman"
+  entrypoint = ["goreman", "start"]
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
-  full_bin = ""
   include_dir = []
   include_ext = ["go", "tpl", "tmpl", "html", "env"]
   include_file = []

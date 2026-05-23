@@ -7,7 +7,6 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
-	"github.com/anonychun/bibit/internal/entity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -72,29 +71,6 @@ func NewDB(i do.Injector) (*DB, error) {
 }
 
 func (d *DB) Seed(ctx context.Context) error {
-	defaultAdmin := &entity.Admin{
-		Name:         "Achmad Chun Chun",
-		EmailAddress: "anonychun@gmail.com",
-	}
-
-	defaultAdminPassword := "didbnyaada"
-	err := defaultAdmin.HashPassword(defaultAdminPassword)
-	if err != nil {
-		return err
-	}
-
-	defaultAdminExists, err := d.bunDB.NewSelect().Model(defaultAdmin).Where("email_address = ?", defaultAdmin.EmailAddress).Exists(ctx)
-	if err != nil {
-		return err
-	}
-
-	if !defaultAdminExists {
-		_, err = d.bunDB.NewInsert().Model(defaultAdmin).Exec(ctx)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

@@ -11,7 +11,6 @@ type key int
 
 const (
 	txKey key = iota
-	adminKey
 	userKey
 )
 
@@ -22,15 +21,6 @@ func Tx(ctx context.Context) *bun.Tx {
 
 func SetTx(ctx context.Context, tx *bun.Tx) context.Context {
 	return context.WithValue(ctx, txKey, tx)
-}
-
-func Admin(ctx context.Context) *entity.Admin {
-	admin, _ := ctx.Value(adminKey).(*entity.Admin)
-	return admin
-}
-
-func SetAdmin(ctx context.Context, admin *entity.Admin) context.Context {
-	return context.WithValue(ctx, adminKey, admin)
 }
 
 func User(ctx context.Context) *entity.User {

@@ -73,6 +73,23 @@ func main() {
 			},
 		},
 		{
+			Name:  "job",
+			Usage: "Generate a new job",
+			Arguments: []cli.Argument{
+				&cli.StringArg{
+					Name: "name",
+				},
+			},
+			Action: func(_ context.Context, c *cli.Command) error {
+				name := c.StringArg("name")
+				if name == "" {
+					return errors.New("missing job name")
+				}
+
+				return internal.GenerateJob(name)
+			},
+		},
+		{
 			Name:  "entity",
 			Usage: "Generate a new entity",
 			Arguments: []cli.Argument{

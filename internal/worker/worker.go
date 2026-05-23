@@ -5,7 +5,9 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	clientRiver "github.com/anonychun/bibit/internal/client/river"
+	jobHello "github.com/anonychun/bibit/internal/job/hello"
 	"github.com/anonychun/bibit/internal/logger"
+	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 )
 
@@ -25,8 +27,17 @@ type Worker struct {
 var _ IWorker = (*Worker)(nil)
 
 func NewWorker(i do.Injector) (*Worker, error) {
+	riverClient := do.MustInvoke[*clientRiver.Client](i)
+
+	err := addWorkers(riverClient.Workers(),
+		do.MustInvoke[*jobHello.Job](i),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Worker{
-		riverClient: do.MustInvoke[*clientRiver.Client](i),
+		riverClient: riverClient,
 		logger:      do.MustInvoke[*logger.Logger](i),
 	}, nil
 }
@@ -45,4 +56,15 @@ func (w *Worker) Start(ctx context.Context) error {
 func (w *Worker) Shutdown(ctx context.Context) error {
 	w.logger.Log().Info("shutting down worker")
 	return w.riverClient.Client().Stop(ctx)
+}
+
+func addWorkers[T river.JobArgs](workers *river.Workers, jobs ...river.Worker[T]) error {
+	for _, job := range jobs {
+		err := river.AddWorkerSafely(workers, job)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
