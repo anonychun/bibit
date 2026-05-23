@@ -182,23 +182,23 @@ To start the HTTP server, run:
 To execute a function within a database transaction in the use case layer, you can use the `repository.Transaction` function. Here's an example:
 
 ```go
-func (u *UsecaseImpl) Delete(ctx context.Context, req DeleteRequest) error {
-	exists, err := u.adminRepository.ExistsById(ctx, req.Id)
+func (u *Usecase) Delete(ctx context.Context, req DeleteRequest) error {
+	exists, err := u.userRepository.ExistsById(ctx, req.Id)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		return consts.ErrAdminNotFound
+		return consts.ErrUserNotFound
 	}
 
 	return repository.Transaction(ctx, func(ctx context.Context) error {
-		err := u.adminSessionRepository.DeleteAllByAdminId(ctx, req.Id)
+		err := u.userSessionRepository.DeleteAllByUserId(ctx, req.Id)
 		if err != nil {
 			return err
 		}
 
-		return u.adminRepository.DeleteById(ctx, req.Id)
+		return u.userRepository.DeleteById(ctx, req.Id)
 	})
 }
 ```
@@ -221,7 +221,5 @@ user := current.User(ctx)
 ## Starter kit
 
 Bibit comes with default starter kit to help you get started quickly.
-
-- **Admin management**: Includes admin authentication and CRUD operations.
 
 You can explore the generated code, adapt it to your project's requirements, and use it to become familiar with the structure and conventions.
