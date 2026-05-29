@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+which nilaway >/dev/null || go install go.uber.org/nilaway/cmd/nilaway@latest
+
+if [ $# -eq 0 ]; then
+	nilaway ./...
+else
+	nilaway "${@}"
+fi
