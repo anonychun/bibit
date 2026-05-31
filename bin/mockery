@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+which mockery >/dev/null || go install github.com/vektra/mockery/v3@latest
+
+mockery "${@}"

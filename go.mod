@@ -3,10 +3,10 @@ module github.com/anonychun/bibit
 go 1.26
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.41.8
-	github.com/aws/aws-sdk-go-v2/config v1.32.19
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.18
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.1
+	github.com/aws/aws-sdk-go-v2 v1.41.9
+	github.com/aws/aws-sdk-go-v2/config v1.32.20
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.19
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.2
 	github.com/google/uuid v1.6.0
 	github.com/gookit/validate v1.5.7
 	github.com/jackc/pgx/v5 v5.9.2
@@ -19,6 +19,7 @@ require (
 	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.38.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.38.0
 	github.com/samber/do/v2 v2.0.0
+	github.com/stretchr/testify v1.11.1
 	github.com/uptrace/bun v1.2.18
 	github.com/uptrace/bun/dialect/pgdialect v1.2.18
 	github.com/uptrace/bun/extra/bundebug v1.2.18
@@ -28,19 +29,19 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.10 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.24 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.24 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.24 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.25 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.9 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.24 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.24 // indirect
-	github.com/aws/aws-sdk-go-v2/service/signin v1.1.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.30.18 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.42.2 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.11 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.25 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.25 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.25 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.26 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.18 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.25 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.25 // indirect
+	github.com/aws/aws-sdk-go-v2/service/signin v1.1.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.30.19 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.42.3 // indirect
 	github.com/aws/smithy-go v1.26.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.19.0 // indirect
@@ -51,7 +52,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -61,7 +62,7 @@ require (
 	github.com/riverqueue/river/rivertype v0.38.0 // indirect
 	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/tidwall/gjson v1.19.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
