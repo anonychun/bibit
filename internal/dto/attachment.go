@@ -8,13 +8,14 @@ import (
 	storageS3 "github.com/anonychun/bibit/internal/storage/s3"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 )
 
 type AttachmentBlueprint struct {
-	Id       string `json:"id"`
-	FileName string `json:"fileName"`
-	Url      string `json:"url"`
+	Id       uuid.UUID `json:"id"`
+	FileName string    `json:"fileName"`
+	Url      string    `json:"url"`
 }
 
 func NewAttachmentBlueprint(ctx context.Context, attachment *entity.Attachment) (*AttachmentBlueprint, error) {
@@ -35,7 +36,7 @@ func NewAttachmentBlueprint(ctx context.Context, attachment *entity.Attachment) 
 	}
 
 	return &AttachmentBlueprint{
-		Id:       attachment.Id.String(),
+		Id:       attachment.Id,
 		FileName: attachment.FileName,
 		Url:      presignResult.URL,
 	}, nil

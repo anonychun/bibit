@@ -6,6 +6,7 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
+	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 )
@@ -15,7 +16,7 @@ func init() {
 }
 
 type Args struct {
-	UserId string
+	UserId uuid.UUID
 }
 
 func (Args) Kind() string {

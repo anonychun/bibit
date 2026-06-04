@@ -6,6 +6,7 @@ import (
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
 	"github.com/anonychun/bibit/internal/entity"
+	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 )
 
@@ -14,7 +15,7 @@ func init() {
 }
 
 type IRepository interface {
-	FindById(ctx context.Context, id string) (*entity.User, error)
+	FindById(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	FindByEmailAddress(ctx context.Context, emailAddress string) (*entity.User, error)
 	Create(ctx context.Context, user *entity.User) error
 	ExistsByEmailAddress(ctx context.Context, emailAddress string) (bool, error)
@@ -32,7 +33,7 @@ func NewRepository(i do.Injector) (*Repository, error) {
 	}, nil
 }
 
-func (r *Repository) FindById(ctx context.Context, id string) (*entity.User, error) {
+func (r *Repository) FindById(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	user := &entity.User{}
 	err := r.sqlDB.DB(ctx).NewSelect().Model(user).Where("id = ?", id).Limit(1).Scan(ctx)
 	if err != nil {

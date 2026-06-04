@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/anonychun/bibit/internal/consts"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -204,7 +205,7 @@ func TestHandler_Me(t *testing.T) {
 		usecase := NewMockIUsecase(t)
 		handler := &Handler{usecase: usecase}
 		res := &MeResponse{}
-		res.User.Id = "user-id"
+		res.User.Id = uuid.MustParse("019e925f-3f42-76a0-8518-cb8e51c0b8e2")
 		res.User.Name = "Ada Lovelace"
 		res.User.EmailAddress = "ada@example.com"
 
@@ -214,7 +215,7 @@ func TestHandler_Me(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.JSONEq(t, `{"ok":true,"meta":null,"data":{"user":{"id":"user-id","name":"Ada Lovelace","emailAddress":"ada@example.com"}},"errors":null}`, rec.Body.String())
+		assert.JSONEq(t, `{"ok":true,"meta":null,"data":{"user":{"id":"019e925f-3f42-76a0-8518-cb8e51c0b8e2","name":"Ada Lovelace","emailAddress":"ada@example.com"}},"errors":null}`, rec.Body.String())
 	})
 
 	t.Run("returns usecase errors", func(t *testing.T) {

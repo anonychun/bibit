@@ -1,5 +1,7 @@
 package auth
 
+import "github.com/google/uuid"
+
 type SignUpRequest struct {
 	IpAddress    string `json:"-"`
 	UserAgent    string `json:"-"`
@@ -29,8 +31,8 @@ type SignOutRequest struct {
 
 type MeResponse struct {
 	User struct {
-		Id           string `json:"id"`
-		Name         string `json:"name"`
-		EmailAddress string `json:"emailAddress"`
+		Id           uuid.UUID `json:"id"`
+		Name         string    `json:"name"`
+		EmailAddress string    `json:"emailAddress"`
 	} `json:"user"`
 }
