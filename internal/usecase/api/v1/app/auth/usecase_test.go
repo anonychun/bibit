@@ -324,7 +324,7 @@ func TestUsecase_Me(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, res)
-		assert.Equal(t, userID.String(), res.User.Id)
+		assert.Equal(t, userID, res.User.Id)
 		assert.Equal(t, "Ada Lovelace", res.User.Name)
 		assert.Equal(t, "ada@example.com", res.User.EmailAddress)
 	})

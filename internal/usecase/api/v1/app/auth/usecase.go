@@ -145,7 +145,7 @@ func (u *Usecase) Me(ctx context.Context) (*MeResponse, error) {
 	}
 
 	res := &MeResponse{}
-	res.User.Id = user.Id.String()
+	res.User.Id = user.Id
 	res.User.Name = user.Name
 	res.User.EmailAddress = user.EmailAddress
 

@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/anonychun/bibit/internal/entity"
+	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -230,7 +231,7 @@ func (_c *MockIRepository_FindByEmailAddress_Call) RunAndReturn(run func(ctx con
 }
 
 // FindById provides a mock function for the type MockIRepository
-func (_mock *MockIRepository) FindById(ctx context.Context, id string) (*entity.User, error) {
+func (_mock *MockIRepository) FindById(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -239,17 +240,17 @@ func (_mock *MockIRepository) FindById(ctx context.Context, id string) (*entity.
 
 	var r0 *entity.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*entity.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*entity.User, error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *entity.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *entity.User); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entity.User)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
 		r1 = returnFunc(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -264,20 +265,20 @@ type MockIRepository_FindById_Call struct {
 
 // FindById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - id uuid.UUID
 func (_e *MockIRepository_Expecter) FindById(ctx interface{}, id interface{}) *MockIRepository_FindById_Call {
 	return &MockIRepository_FindById_Call{Call: _e.mock.On("FindById", ctx, id)}
 }
 
-func (_c *MockIRepository_FindById_Call) Run(run func(ctx context.Context, id string)) *MockIRepository_FindById_Call {
+func (_c *MockIRepository_FindById_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockIRepository_FindById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
 		run(
 			arg0,
@@ -292,7 +293,7 @@ func (_c *MockIRepository_FindById_Call) Return(user *entity.User, err error) *M
 	return _c
 }
 
-func (_c *MockIRepository_FindById_Call) RunAndReturn(run func(ctx context.Context, id string) (*entity.User, error)) *MockIRepository_FindById_Call {
+func (_c *MockIRepository_FindById_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*entity.User, error)) *MockIRepository_FindById_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -31,7 +31,7 @@ func TestRepository_FindById(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "email_address", "password_digest"}).
 				AddRow(userID.String(), "Ada Lovelace", "ada@example.com", "password-digest"))
 
-		actualUser, err := repository.FindById(ctx, userID.String())
+		actualUser, err := repository.FindById(ctx, userID)
 
 		require.NoError(t, err)
 		require.NotNil(t, actualUser)
@@ -44,14 +44,14 @@ func TestRepository_FindById(t *testing.T) {
 
 	t.Run("returns an error when the select fails", func(t *testing.T) {
 		ctx := context.Background()
-		userID := uuid.New().String()
+		userID := uuid.New()
 		expectedErr := errors.New("select user by id")
 		bunDB, sqlMock := newMockedBunDB(t)
 		sqlDB := dbSql.NewMockIDB(t)
 		repository := &Repository{sqlDB: sqlDB}
 
 		sqlDB.EXPECT().DB(ctx).Return(bunDB).Once()
-		sqlMock.ExpectQuery(fmt.Sprintf(`SELECT .* FROM "users" AS "user" WHERE \(id = '%s'\) LIMIT 1`, regexp.QuoteMeta(userID))).
+		sqlMock.ExpectQuery(fmt.Sprintf(`SELECT .* FROM "users" AS "user" WHERE \(id = '%s'\) LIMIT 1`, regexp.QuoteMeta(userID.String()))).
 			WillReturnError(expectedErr)
 
 		actualUser, err := repository.FindById(ctx, userID)

@@ -55,7 +55,7 @@ func (m *Middleware) AuthenticateUser(next echo.HandlerFunc) echo.HandlerFunc {
 			return consts.ErrUnauthorized
 		}
 
-		user, err := m.userRepository.FindById(c.Request().Context(), userSession.UserId.String())
+		user, err := m.userRepository.FindById(c.Request().Context(), userSession.UserId)
 		if err != nil {
 			return consts.ErrUnauthorized
 		}
