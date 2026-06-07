@@ -6,7 +6,7 @@ import (
 	"github.com/anonychun/bibit/internal/bootstrap"
 	clientRiver "github.com/anonychun/bibit/internal/client/river"
 	jobHello "github.com/anonychun/bibit/internal/job/hello"
-	"github.com/anonychun/bibit/internal/logger"
+	"github.com/anonychun/bibit/internal/observability"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 )
@@ -20,8 +20,8 @@ type IWorker interface {
 }
 
 type Worker struct {
-	riverClient clientRiver.IClient
-	logger      logger.ILogger
+	riverClient   clientRiver.IClient
+	observability observability.IObservability
 }
 
 var _ IWorker = (*Worker)(nil)
@@ -37,13 +37,13 @@ func NewWorker(i do.Injector) (*Worker, error) {
 	}
 
 	return &Worker{
-		riverClient: riverClient,
-		logger:      do.MustInvoke[*logger.Logger](i),
+		riverClient:   riverClient,
+		observability: do.MustInvoke[*observability.Observability](i),
 	}, nil
 }
 
 func (w *Worker) Start(ctx context.Context) error {
-	w.logger.Log().Info("starting worker")
+	w.observability.Logger().Info("starting worker")
 	err := w.riverClient.Client().Start(ctx)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (w *Worker) Start(ctx context.Context) error {
 }
 
 func (w *Worker) Shutdown(ctx context.Context) error {
-	w.logger.Log().Info("shutting down worker")
+	w.observability.Logger().Info("shutting down worker")
 	return w.riverClient.Client().Stop(ctx)
 }
 
