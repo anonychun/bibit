@@ -9,9 +9,9 @@ import (
 	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
-	"github.com/anonychun/bibit/internal/logger"
 	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
 	middlewareLogger "github.com/anonychun/bibit/internal/middleware/logger"
+	"github.com/anonychun/bibit/internal/observability"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
@@ -26,9 +26,9 @@ type IServer interface {
 }
 
 type Server struct {
-	echo   *echo.Echo
-	server *http.Server
-	logger logger.ILogger
+	echo          *echo.Echo
+	server        *http.Server
+	observability observability.IObservability
 
 	authMiddleware   middlewareAuth.IMiddleware
 	loggerMiddleware middlewareLogger.IMiddleware
@@ -40,10 +40,10 @@ var _ IServer = (*Server)(nil)
 
 func NewServer(i do.Injector) (*Server, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	l := do.MustInvoke[*logger.Logger](i)
+	o11y := do.MustInvoke[*observability.Observability](i)
 
 	e := echo.NewWithConfig(echo.Config{
-		Logger:           l.Log(),
+		Logger:           o11y.Logger(),
 		HTTPErrorHandler: api.HttpErrorHandler,
 	})
 
@@ -53,9 +53,9 @@ func NewServer(i do.Injector) (*Server, error) {
 	}
 
 	return &Server{
-		echo:   e,
-		server: srv,
-		logger: l,
+		echo:          e,
+		server:        srv,
+		observability: o11y,
 
 		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
@@ -70,7 +70,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	s.logger.Log().Info("starting server", slog.String("addr", s.server.Addr))
+	s.observability.Logger().Info("starting server", slog.String("addr", s.server.Addr))
 	err = s.server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err
@@ -80,6 +80,6 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	s.logger.Log().Info("shutting down server")
+	s.observability.Logger().Info("shutting down server")
 	return s.server.Shutdown(ctx)
 }

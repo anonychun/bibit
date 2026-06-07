@@ -5,7 +5,7 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
-	"github.com/anonychun/bibit/internal/logger"
+	"github.com/anonychun/bibit/internal/observability"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
@@ -30,7 +30,7 @@ var _ IClient = (*Client)(nil)
 
 func NewClient(i do.Injector) (*Client, error) {
 	sqlDB := do.MustInvoke[*dbSql.PostgresDB](i)
-	l := do.MustInvoke[*logger.Logger](i)
+	o11y := do.MustInvoke[*observability.Observability](i)
 
 	ctx := context.Background()
 	workers := river.NewWorkers()
@@ -40,7 +40,7 @@ func NewClient(i do.Injector) (*Client, error) {
 			river.QueueDefault: {MaxWorkers: 100},
 		},
 		Workers: workers,
-		Logger:  l.Log(),
+		Logger:  o11y.Logger(),
 	})
 	if err != nil {
 		return nil, err

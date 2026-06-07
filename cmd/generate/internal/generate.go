@@ -3,8 +3,6 @@ package internal
 import (
 	"html/template"
 	"os"
-	"runtime/debug"
-	"strings"
 )
 
 type TemplateData struct {
@@ -34,22 +32,4 @@ func generateFile(filePath, tmplContent string, data TemplateData) error {
 	}
 
 	return nil
-}
-
-func extractPackageName(name string) string {
-	parts := strings.Split(strings.TrimSpace(name), "/")
-	return parts[len(parts)-1]
-}
-
-func getModuleName() string {
-	bi, ok := debug.ReadBuildInfo()
-	if !ok {
-		return ""
-	}
-
-	if len(bi.Deps) > 0 && bi.Deps[0].Path != "" {
-		return bi.Deps[0].Path
-	}
-
-	return bi.Path
 }

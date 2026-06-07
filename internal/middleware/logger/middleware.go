@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
-	"github.com/anonychun/bibit/internal/logger"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/samber/do/v2"
@@ -20,15 +19,12 @@ type IMiddleware interface {
 }
 
 type Middleware struct {
-	logger logger.ILogger
 }
 
 var _ IMiddleware = (*Middleware)(nil)
 
 func NewMiddleware(i do.Injector) (*Middleware, error) {
-	return &Middleware{
-		logger: do.MustInvoke[*logger.Logger](i),
-	}, nil
+	return &Middleware{}, nil
 }
 
 func (m *Middleware) RequestLogger(next echo.HandlerFunc) echo.HandlerFunc {
