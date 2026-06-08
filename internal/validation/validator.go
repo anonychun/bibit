@@ -3,7 +3,7 @@ package validation
 import (
 	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/internal/bootstrap"
-	"github.com/gookit/validate"
+	"github.com/gookit/validate/v2"
 	"github.com/samber/do/v2"
 )
 
