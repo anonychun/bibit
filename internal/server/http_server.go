@@ -18,14 +18,14 @@ import (
 )
 
 func init() {
-	do.Provide(bootstrap.Injector, NewServer)
+	do.Provide(bootstrap.Injector, NewHttpServer)
 }
 
-type IServer interface {
+type IHttpServer interface {
 	Start(ctx context.Context) error
 }
 
-type Server struct {
+type HttpServer struct {
 	echo          *echo.Echo
 	server        *http.Server
 	observability observability.IObservability
@@ -33,12 +33,12 @@ type Server struct {
 	authMiddleware   middlewareAuth.IMiddleware
 	loggerMiddleware middlewareLogger.IMiddleware
 
-	apiV1AppAuthHandler usecaseApiV1AppAuth.IHandler
+	apiV1AppAuthHttpHandler usecaseApiV1AppAuth.IHttpHandler
 }
 
-var _ IServer = (*Server)(nil)
+var _ IHttpServer = (*HttpServer)(nil)
 
-func NewServer(i do.Injector) (*Server, error) {
+func NewHttpServer(i do.Injector) (*HttpServer, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	o11y := do.MustInvoke[*observability.Observability](i)
 
@@ -48,11 +48,11 @@ func NewServer(i do.Injector) (*Server, error) {
 	})
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
+		Addr:    fmt.Sprintf(":%d", cfg.Http.Port),
 		Handler: e,
 	}
 
-	return &Server{
+	return &HttpServer{
 		echo:          e,
 		server:        srv,
 		observability: o11y,
@@ -60,17 +60,17 @@ func NewServer(i do.Injector) (*Server, error) {
 		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
 
-		apiV1AppAuthHandler: do.MustInvoke[*usecaseApiV1AppAuth.Handler](i),
+		apiV1AppAuthHttpHandler: do.MustInvoke[*usecaseApiV1AppAuth.HttpHandler](i),
 	}, nil
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *HttpServer) Start(ctx context.Context) error {
 	err := s.routes()
 	if err != nil {
 		return err
 	}
 
-	s.observability.Logger().Info("starting server", slog.String("addr", s.server.Addr))
+	s.observability.Logger().Info("starting http server", slog.String("addr", s.server.Addr))
 	err = s.server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err
@@ -79,7 +79,7 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
-	s.observability.Logger().Info("shutting down server")
+func (s *HttpServer) Shutdown(ctx context.Context) error {
+	s.observability.Logger().Info("shutting down http server")
 	return s.server.Shutdown(ctx)
 }

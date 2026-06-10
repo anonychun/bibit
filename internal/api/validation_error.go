@@ -1,11 +1,20 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
 
 type ValidationError map[string][]string
 
 func (ve ValidationError) Error() string {
 	return fmt.Sprintf("%v", map[string][]string(ve))
+}
+
+func (ve ValidationError) GRPCStatus() *status.Status {
+	return status.New(codes.InvalidArgument, ve.Error())
 }
 
 func (ve ValidationError) IsFail() bool {

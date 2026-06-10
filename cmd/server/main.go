@@ -8,21 +8,27 @@ import (
 	"github.com/anonychun/bibit/internal/server"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
 	cmd := &cli.Command{
 		Name:  "server",
-		Usage: "Manage the HTTP server",
+		Usage: "Manage the HTTP and gRPC servers",
 	}
 
 	cmd.Commands = []*cli.Command{
 		{
 			Name:  "start",
-			Usage: "Start the server",
+			Usage: "Start the servers",
 			Action: func(ctx context.Context, c *cli.Command) error {
-				srv := do.MustInvoke[*server.Server](bootstrap.Injector)
-				return srv.Start(ctx)
+				httpSrv := do.MustInvoke[*server.HttpServer](bootstrap.Injector)
+				grpcSrv := do.MustInvoke[*server.GrpcServer](bootstrap.Injector)
+
+				g, ctx := errgroup.WithContext(ctx)
+				g.Go(func() error { return httpSrv.Start(ctx) })
+				g.Go(func() error { return grpcSrv.Start(ctx) })
+				return g.Wait()
 			},
 		},
 	}
