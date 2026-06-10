@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package api.v1.app.auth;
+
+option go_package = "github.com/anonychun/bibit/internal/gen/proto/api/v1/app/auth";
+
+service Service {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+  rpc SignOut(SignOutRequest) returns (SignOutResponse);
+  rpc Me(MeRequest) returns (MeResponse);
+}
+
+message SignUpRequest {
+  string name = 1;
+  string email_address = 2;
+  string password = 3;
+}
+
+message SignUpResponse {
+  string token = 1;
+}
+
+message SignInRequest {
+  string email_address = 1;
+  string password = 2;
+}
+
+message SignInResponse {
+  string token = 1;
+}
+
+message SignOutRequest {
+  string token = 1;
+}
+
+message SignOutResponse {}
+
+message MeRequest {}
+
+message MeResponse {
+  User user = 1;
+
+  message User {
+    string id = 1;
+    string name = 2;
+    string email_address = 3;
+  }
+}

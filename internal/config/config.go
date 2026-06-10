@@ -14,9 +14,13 @@ func init() {
 }
 
 type Config struct {
-	Server struct {
+	Http struct {
 		Port int `envconfig:"port"`
-	} `envconfig:"server"`
+	} `envconfig:"http"`
+
+	Grpc struct {
+		Port int `envconfig:"port"`
+	} `envconfig:"grpc"`
 
 	DB struct {
 		Sql struct {

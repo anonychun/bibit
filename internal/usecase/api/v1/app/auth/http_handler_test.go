@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHandler_SignUp(t *testing.T) {
+func TestHttpHandler_SignUp(t *testing.T) {
 	t.Run("binds the request, creates a session cookie, and returns ok", func(t *testing.T) {
 		e := echo.New()
 		body := `{"name":"Ada Lovelace","emailAddress":"ada@example.com","password":"correct horse battery staple"}`
@@ -26,7 +26,7 @@ func TestHandler_SignUp(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedReq := SignUpRequest{
 			IpAddress:    "192.0.2.1",
 			UserAgent:    "Go test",
@@ -37,7 +37,7 @@ func TestHandler_SignUp(t *testing.T) {
 
 		usecase.EXPECT().SignUp(mock.Anything, expectedReq).Return(&SignUpResponse{Token: "session-token"}, nil).Once()
 
-		err := handler.SignUp(ctx)
+		err := httpHandler.SignUp(ctx)
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -57,9 +57,9 @@ func TestHandler_SignUp(t *testing.T) {
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
-		handler := &Handler{usecase: NewMockIUsecase(t)}
+		httpHandler := &HttpHandler{usecase: NewMockIUsecase(t)}
 
-		err := handler.SignUp(ctx)
+		err := httpHandler.SignUp(ctx)
 
 		require.Error(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -73,19 +73,19 @@ func TestHandler_SignUp(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedErr := errors.New("sign up")
 
 		usecase.EXPECT().SignUp(mock.Anything, mock.Anything).Return(nil, expectedErr).Once()
 
-		err := handler.SignUp(ctx)
+		err := httpHandler.SignUp(ctx)
 
 		require.ErrorIs(t, err, expectedErr)
 		assert.Empty(t, rec.Result().Cookies())
 	})
 }
 
-func TestHandler_SignIn(t *testing.T) {
+func TestHttpHandler_SignIn(t *testing.T) {
 	t.Run("binds the request, creates a session cookie, and returns ok", func(t *testing.T) {
 		e := echo.New()
 		body := `{"emailAddress":"ada@example.com","password":"correct horse battery staple"}`
@@ -96,7 +96,7 @@ func TestHandler_SignIn(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedReq := SignInRequest{
 			IpAddress:    "192.0.2.1",
 			UserAgent:    "Go test",
@@ -106,7 +106,7 @@ func TestHandler_SignIn(t *testing.T) {
 
 		usecase.EXPECT().SignIn(mock.Anything, expectedReq).Return(&SignInResponse{Token: "session-token"}, nil).Once()
 
-		err := handler.SignIn(ctx)
+		err := httpHandler.SignIn(ctx)
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -128,19 +128,19 @@ func TestHandler_SignIn(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedErr := errors.New("sign in")
 
 		usecase.EXPECT().SignIn(mock.Anything, mock.Anything).Return(nil, expectedErr).Once()
 
-		err := handler.SignIn(ctx)
+		err := httpHandler.SignIn(ctx)
 
 		require.ErrorIs(t, err, expectedErr)
 		assert.Empty(t, rec.Result().Cookies())
 	})
 }
 
-func TestHandler_SignOut(t *testing.T) {
+func TestHttpHandler_SignOut(t *testing.T) {
 	t.Run("deletes the session and clears the cookie", func(t *testing.T) {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodPost, "/sign-out", nil)
@@ -148,11 +148,11 @@ func TestHandler_SignOut(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 
 		usecase.EXPECT().SignOut(mock.Anything, SignOutRequest{Token: "session-token"}).Return(nil).Once()
 
-		err := handler.SignOut(ctx)
+		err := httpHandler.SignOut(ctx)
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusNoContent, rec.Code)
@@ -169,9 +169,9 @@ func TestHandler_SignOut(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/sign-out", nil)
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
-		handler := &Handler{usecase: NewMockIUsecase(t)}
+		httpHandler := &HttpHandler{usecase: NewMockIUsecase(t)}
 
-		err := handler.SignOut(ctx)
+		err := httpHandler.SignOut(ctx)
 
 		require.Error(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -184,26 +184,26 @@ func TestHandler_SignOut(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedErr := errors.New("sign out")
 
 		usecase.EXPECT().SignOut(mock.Anything, SignOutRequest{Token: "session-token"}).Return(expectedErr).Once()
 
-		err := handler.SignOut(ctx)
+		err := httpHandler.SignOut(ctx)
 
 		require.ErrorIs(t, err, expectedErr)
 		assert.Empty(t, rec.Result().Cookies())
 	})
 }
 
-func TestHandler_Me(t *testing.T) {
+func TestHttpHandler_Me(t *testing.T) {
 	t.Run("returns the current user response", func(t *testing.T) {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodGet, "/me", nil)
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		res := &MeResponse{}
 		res.User.Id = uuid.MustParse("019e925f-3f42-76a0-8518-cb8e51c0b8e2")
 		res.User.Name = "Ada Lovelace"
@@ -211,7 +211,7 @@ func TestHandler_Me(t *testing.T) {
 
 		usecase.EXPECT().Me(mock.Anything).Return(res, nil).Once()
 
-		err := handler.Me(ctx)
+		err := httpHandler.Me(ctx)
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -224,12 +224,12 @@ func TestHandler_Me(t *testing.T) {
 		rec := httptest.NewRecorder()
 		ctx := e.NewContext(req, rec)
 		usecase := NewMockIUsecase(t)
-		handler := &Handler{usecase: usecase}
+		httpHandler := &HttpHandler{usecase: usecase}
 		expectedErr := errors.New("me")
 
 		usecase.EXPECT().Me(mock.Anything).Return(nil, expectedErr).Once()
 
-		err := handler.Me(ctx)
+		err := httpHandler.Me(ctx)
 
 		require.ErrorIs(t, err, expectedErr)
 	})

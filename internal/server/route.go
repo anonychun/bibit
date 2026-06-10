@@ -10,7 +10,7 @@ func namespace(e *echo.Group, path string, f func(e *echo.Group)) {
 	f(e.Group(path))
 }
 
-func (s *Server) routes() error {
+func (s *HttpServer) routes() error {
 	s.echo.Use(middleware.Recover())
 	s.echo.Use(middleware.RequestID())
 	s.echo.Use(s.loggerMiddleware.RequestLogger)
@@ -20,10 +20,10 @@ func (s *Server) routes() error {
 		namespace(e, "/app", func(e *echo.Group) {
 			e.Use(s.authMiddleware.AuthenticateUser)
 
-			e.POST("/auth/signup", s.apiV1AppAuthHandler.SignUp)
-			e.POST("/auth/signin", s.apiV1AppAuthHandler.SignIn)
-			e.POST("/auth/signout", s.apiV1AppAuthHandler.SignOut)
-			e.GET("/auth/me", s.apiV1AppAuthHandler.Me)
+			e.POST("/auth/signup", s.apiV1AppAuthHttpHandler.SignUp)
+			e.POST("/auth/signin", s.apiV1AppAuthHttpHandler.SignIn)
+			e.POST("/auth/signout", s.apiV1AppAuthHttpHandler.SignOut)
+			e.GET("/auth/me", s.apiV1AppAuthHttpHandler.Me)
 		})
 
 		namespace(e, "/landing", func(e *echo.Group) {
