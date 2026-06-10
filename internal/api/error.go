@@ -61,4 +61,3 @@ func httpStatusToGrpcCode(httpStatus int) codes.Code {
 func HttpErrorHandler(c *echo.Context, err error) {
 	NewResponse(c).SetErrors(err).Send()
 }
-

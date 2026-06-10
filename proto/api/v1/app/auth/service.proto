@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.v1.app.auth;
 
-option go_package = "github.com/anonychun/bibit/internal/gen/proto/api/v1/app/auth";
+option go_package = "github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/auth";
 
 service Service {
   rpc SignUp(SignUpRequest) returns (SignUpResponse);

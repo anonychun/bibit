@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
-	pb "github.com/anonychun/bibit/internal/gen/proto/api/v1/app/auth"
 	"github.com/anonychun/bibit/internal/util"
+	pb "github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/auth"
 	"github.com/samber/do/v2"
 )
 
