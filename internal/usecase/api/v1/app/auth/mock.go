@@ -7,7 +7,7 @@ package auth
 import (
 	"context"
 
-	"github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/auth"
+	"github.com/anonychun/bibit/pkg/pb/api/v1/app/auth"
 	"github.com/labstack/echo/v5"
 	mock "github.com/stretchr/testify/mock"
 )

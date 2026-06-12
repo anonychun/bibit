@@ -472,7 +472,7 @@ const file_api_v1_app_auth_service_proto_rawDesc = "" +
 	"\x06SignUp\x12\x1e.api.v1.app.auth.SignUpRequest\x1a\x1f.api.v1.app.auth.SignUpResponse\x12I\n" +
 	"\x06SignIn\x12\x1e.api.v1.app.auth.SignInRequest\x1a\x1f.api.v1.app.auth.SignInResponse\x12L\n" +
 	"\aSignOut\x12\x1f.api.v1.app.auth.SignOutRequest\x1a .api.v1.app.auth.SignOutResponse\x12=\n" +
-	"\x02Me\x12\x1a.api.v1.app.auth.MeRequest\x1a\x1b.api.v1.app.auth.MeResponseB:Z8github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/authb\x06proto3"
+	"\x02Me\x12\x1a.api.v1.app.auth.MeRequest\x1a\x1b.api.v1.app.auth.MeResponseB3Z1github.com/anonychun/bibit/pkg/pb/api/v1/app/authb\x06proto3"
 
 var (
 	file_api_v1_app_auth_service_proto_rawDescOnce sync.Once

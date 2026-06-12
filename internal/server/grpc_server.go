@@ -10,7 +10,7 @@ import (
 	"github.com/anonychun/bibit/internal/config"
 	"github.com/anonychun/bibit/internal/observability"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
-	pbApiV1AppAuth "github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/auth"
+	pbApiV1AppAuth "github.com/anonychun/bibit/pkg/pb/api/v1/app/auth"
 	"github.com/samber/do/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

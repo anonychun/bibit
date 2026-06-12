@@ -5,7 +5,7 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/util"
-	pb "github.com/anonychun/bibit/pkg/gen/proto/api/v1/app/auth"
+	pb "github.com/anonychun/bibit/pkg/pb/api/v1/app/auth"
 	"github.com/samber/do/v2"
 )
 
