@@ -61,7 +61,7 @@ type MockIDB_Seed_Call struct {
 
 // Seed is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) Seed(ctx interface{}) *MockIDB_Seed_Call {
+func (_e *MockIDB_Expecter) Seed(ctx any) *MockIDB_Seed_Call {
 	return &MockIDB_Seed_Call{Call: _e.mock.On("Seed", ctx)}
 }
 

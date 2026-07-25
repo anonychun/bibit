@@ -63,7 +63,7 @@ type MockIRepository_Create_Call struct {
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userSession *entity.UserSession
-func (_e *MockIRepository_Expecter) Create(ctx interface{}, userSession interface{}) *MockIRepository_Create_Call {
+func (_e *MockIRepository_Expecter) Create(ctx any, userSession any) *MockIRepository_Create_Call {
 	return &MockIRepository_Create_Call{Call: _e.mock.On("Create", ctx, userSession)}
 }
 
@@ -120,7 +120,7 @@ type MockIRepository_DeleteByToken_Call struct {
 // DeleteByToken is a helper method to define mock.On call
 //   - ctx context.Context
 //   - token string
-func (_e *MockIRepository_Expecter) DeleteByToken(ctx interface{}, token interface{}) *MockIRepository_DeleteByToken_Call {
+func (_e *MockIRepository_Expecter) DeleteByToken(ctx any, token any) *MockIRepository_DeleteByToken_Call {
 	return &MockIRepository_DeleteByToken_Call{Call: _e.mock.On("DeleteByToken", ctx, token)}
 }
 
@@ -188,7 +188,7 @@ type MockIRepository_FindByToken_Call struct {
 // FindByToken is a helper method to define mock.On call
 //   - ctx context.Context
 //   - token string
-func (_e *MockIRepository_Expecter) FindByToken(ctx interface{}, token interface{}) *MockIRepository_FindByToken_Call {
+func (_e *MockIRepository_Expecter) FindByToken(ctx any, token any) *MockIRepository_FindByToken_Call {
 	return &MockIRepository_FindByToken_Call{Call: _e.mock.On("FindByToken", ctx, token)}
 }
 

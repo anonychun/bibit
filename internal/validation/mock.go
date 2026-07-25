@@ -62,7 +62,7 @@ type MockIValidator_Struct_Call struct {
 
 // Struct is a helper method to define mock.On call
 //   - s any
-func (_e *MockIValidator_Expecter) Struct(s interface{}) *MockIValidator_Struct_Call {
+func (_e *MockIValidator_Expecter) Struct(s any) *MockIValidator_Struct_Call {
 	return &MockIValidator_Struct_Call{Call: _e.mock.On("Struct", s)}
 }
 

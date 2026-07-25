@@ -82,9 +82,9 @@ type MockIStorage_GetObject_Call struct {
 //   - ctx context.Context
 //   - params *s3.GetObjectInput
 //   - optFns ...func(*s3.Options)
-func (_e *MockIStorage_Expecter) GetObject(ctx interface{}, params interface{}, optFns ...interface{}) *MockIStorage_GetObject_Call {
+func (_e *MockIStorage_Expecter) GetObject(ctx any, params any, optFns ...any) *MockIStorage_GetObject_Call {
 	return &MockIStorage_GetObject_Call{Call: _e.mock.On("GetObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]any{ctx, params}, optFns...)...)}
 }
 
 func (_c *MockIStorage_GetObject_Call) Run(run func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options))) *MockIStorage_GetObject_Call {
@@ -165,9 +165,9 @@ type MockIStorage_PresignGetObject_Call struct {
 //   - ctx context.Context
 //   - params *s3.GetObjectInput
 //   - optFns ...func(*s3.PresignOptions)
-func (_e *MockIStorage_Expecter) PresignGetObject(ctx interface{}, params interface{}, optFns ...interface{}) *MockIStorage_PresignGetObject_Call {
+func (_e *MockIStorage_Expecter) PresignGetObject(ctx any, params any, optFns ...any) *MockIStorage_PresignGetObject_Call {
 	return &MockIStorage_PresignGetObject_Call{Call: _e.mock.On("PresignGetObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]any{ctx, params}, optFns...)...)}
 }
 
 func (_c *MockIStorage_PresignGetObject_Call) Run(run func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions))) *MockIStorage_PresignGetObject_Call {
@@ -248,9 +248,9 @@ type MockIStorage_PutObject_Call struct {
 //   - ctx context.Context
 //   - params *s3.PutObjectInput
 //   - optFns ...func(*s3.Options)
-func (_e *MockIStorage_Expecter) PutObject(ctx interface{}, params interface{}, optFns ...interface{}) *MockIStorage_PutObject_Call {
+func (_e *MockIStorage_Expecter) PutObject(ctx any, params any, optFns ...any) *MockIStorage_PutObject_Call {
 	return &MockIStorage_PutObject_Call{Call: _e.mock.On("PutObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]any{ctx, params}, optFns...)...)}
 }
 
 func (_c *MockIStorage_PutObject_Call) Run(run func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options))) *MockIStorage_PutObject_Call {

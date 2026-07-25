@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package health;
+
+option go_package = "github.com/anonychun/bibit/pkg/pb/health";
+
+service Service {
+  rpc Up(UpRequest) returns (UpResponse);
+}
+
+message UpRequest {}
+
+message UpResponse {
+  string status = 1;
+}

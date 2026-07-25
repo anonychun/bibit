@@ -61,7 +61,7 @@ type MockIWorker_Start_Call struct {
 
 // Start is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIWorker_Expecter) Start(ctx interface{}) *MockIWorker_Start_Call {
+func (_e *MockIWorker_Expecter) Start(ctx any) *MockIWorker_Start_Call {
 	return &MockIWorker_Start_Call{Call: _e.mock.On("Start", ctx)}
 }
 
