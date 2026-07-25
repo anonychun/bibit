@@ -30,10 +30,8 @@ func (s *HttpServer) routes() error {
 		})
 	})
 
+	s.echo.GET("/up", s.healthHttpHandler.Up)
 	s.echo.StaticFS("/", public.PublicFs)
-	s.echo.GET("/up", func(c *echo.Context) error {
-		return nil
-	})
 
 	return nil
 }

@@ -64,7 +64,7 @@ type MockIRepository_Create_Call struct {
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
 //   - user *entity.User
-func (_e *MockIRepository_Expecter) Create(ctx interface{}, user interface{}) *MockIRepository_Create_Call {
+func (_e *MockIRepository_Expecter) Create(ctx any, user any) *MockIRepository_Create_Call {
 	return &MockIRepository_Create_Call{Call: _e.mock.On("Create", ctx, user)}
 }
 
@@ -130,7 +130,7 @@ type MockIRepository_ExistsByEmailAddress_Call struct {
 // ExistsByEmailAddress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - emailAddress string
-func (_e *MockIRepository_Expecter) ExistsByEmailAddress(ctx interface{}, emailAddress interface{}) *MockIRepository_ExistsByEmailAddress_Call {
+func (_e *MockIRepository_Expecter) ExistsByEmailAddress(ctx any, emailAddress any) *MockIRepository_ExistsByEmailAddress_Call {
 	return &MockIRepository_ExistsByEmailAddress_Call{Call: _e.mock.On("ExistsByEmailAddress", ctx, emailAddress)}
 }
 
@@ -198,7 +198,7 @@ type MockIRepository_FindByEmailAddress_Call struct {
 // FindByEmailAddress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - emailAddress string
-func (_e *MockIRepository_Expecter) FindByEmailAddress(ctx interface{}, emailAddress interface{}) *MockIRepository_FindByEmailAddress_Call {
+func (_e *MockIRepository_Expecter) FindByEmailAddress(ctx any, emailAddress any) *MockIRepository_FindByEmailAddress_Call {
 	return &MockIRepository_FindByEmailAddress_Call{Call: _e.mock.On("FindByEmailAddress", ctx, emailAddress)}
 }
 
@@ -266,7 +266,7 @@ type MockIRepository_FindById_Call struct {
 // FindById is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id uuid.UUID
-func (_e *MockIRepository_Expecter) FindById(ctx interface{}, id interface{}) *MockIRepository_FindById_Call {
+func (_e *MockIRepository_Expecter) FindById(ctx any, id any) *MockIRepository_FindById_Call {
 	return &MockIRepository_FindById_Call{Call: _e.mock.On("FindById", ctx, id)}
 }
 

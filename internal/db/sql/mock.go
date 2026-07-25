@@ -65,7 +65,7 @@ type MockIDB_DB_Call struct {
 
 // DB is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) DB(ctx interface{}) *MockIDB_DB_Call {
+func (_e *MockIDB_Expecter) DB(ctx any) *MockIDB_DB_Call {
 	return &MockIDB_DB_Call{Call: _e.mock.On("DB", ctx)}
 }
 
@@ -118,7 +118,7 @@ type MockIDB_PgxPool_Call struct {
 
 // PgxPool is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) PgxPool(ctx interface{}) *MockIDB_PgxPool_Call {
+func (_e *MockIDB_Expecter) PgxPool(ctx any) *MockIDB_PgxPool_Call {
 	return &MockIDB_PgxPool_Call{Call: _e.mock.On("PgxPool", ctx)}
 }
 

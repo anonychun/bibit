@@ -61,7 +61,7 @@ type MockIDB_Migrate_Call struct {
 
 // Migrate is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) Migrate(ctx interface{}) *MockIDB_Migrate_Call {
+func (_e *MockIDB_Expecter) Migrate(ctx any) *MockIDB_Migrate_Call {
 	return &MockIDB_Migrate_Call{Call: _e.mock.On("Migrate", ctx)}
 }
 
@@ -112,7 +112,7 @@ type MockIDB_Rollback_Call struct {
 
 // Rollback is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) Rollback(ctx interface{}) *MockIDB_Rollback_Call {
+func (_e *MockIDB_Expecter) Rollback(ctx any) *MockIDB_Rollback_Call {
 	return &MockIDB_Rollback_Call{Call: _e.mock.On("Rollback", ctx)}
 }
 

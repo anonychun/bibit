@@ -62,7 +62,7 @@ type MockIMiddleware_RequestLogger_Call struct {
 
 // RequestLogger is a helper method to define mock.On call
 //   - next echo.HandlerFunc
-func (_e *MockIMiddleware_Expecter) RequestLogger(next interface{}) *MockIMiddleware_RequestLogger_Call {
+func (_e *MockIMiddleware_Expecter) RequestLogger(next any) *MockIMiddleware_RequestLogger_Call {
 	return &MockIMiddleware_RequestLogger_Call{Call: _e.mock.On("RequestLogger", next)}
 }
 

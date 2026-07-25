@@ -61,7 +61,7 @@ type MockIDB_CreateDatabase_Call struct {
 
 // CreateDatabase is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) CreateDatabase(ctx interface{}) *MockIDB_CreateDatabase_Call {
+func (_e *MockIDB_Expecter) CreateDatabase(ctx any) *MockIDB_CreateDatabase_Call {
 	return &MockIDB_CreateDatabase_Call{Call: _e.mock.On("CreateDatabase", ctx)}
 }
 
@@ -112,7 +112,7 @@ type MockIDB_DropDatabase_Call struct {
 
 // DropDatabase is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockIDB_Expecter) DropDatabase(ctx interface{}) *MockIDB_DropDatabase_Call {
+func (_e *MockIDB_Expecter) DropDatabase(ctx any) *MockIDB_DropDatabase_Call {
 	return &MockIDB_DropDatabase_Call{Call: _e.mock.On("DropDatabase", ctx)}
 }
 

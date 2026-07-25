@@ -13,6 +13,7 @@ import (
 	middlewareLogger "github.com/anonychun/bibit/internal/middleware/logger"
 	"github.com/anonychun/bibit/internal/observability"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
+	usecaseHealth "github.com/anonychun/bibit/internal/usecase/health"
 	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
 )
@@ -34,6 +35,8 @@ type HttpServer struct {
 	loggerMiddleware middlewareLogger.IMiddleware
 
 	apiV1AppAuthHttpHandler usecaseApiV1AppAuth.IHttpHandler
+
+	healthHttpHandler usecaseHealth.IHttpHandler
 }
 
 var _ IHttpServer = (*HttpServer)(nil)
@@ -61,6 +64,8 @@ func NewHttpServer(i do.Injector) (*HttpServer, error) {
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
 
 		apiV1AppAuthHttpHandler: do.MustInvoke[*usecaseApiV1AppAuth.HttpHandler](i),
+
+		healthHttpHandler: do.MustInvoke[*usecaseHealth.HttpHandler](i),
 	}, nil
 }
 

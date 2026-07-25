@@ -62,7 +62,7 @@ type MockIMiddleware_AuthenticateUser_Call struct {
 
 // AuthenticateUser is a helper method to define mock.On call
 //   - next echo.HandlerFunc
-func (_e *MockIMiddleware_Expecter) AuthenticateUser(next interface{}) *MockIMiddleware_AuthenticateUser_Call {
+func (_e *MockIMiddleware_Expecter) AuthenticateUser(next any) *MockIMiddleware_AuthenticateUser_Call {
 	return &MockIMiddleware_AuthenticateUser_Call{Call: _e.mock.On("AuthenticateUser", next)}
 }
 
