@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/anonychun/bibit/internal/util"
+	"github.com/anonychun/bibit/internal/lib"
 )
 
 func GenerateJob(name string) error {
@@ -15,8 +15,8 @@ func GenerateJob(name string) error {
 	}
 
 	data := TemplateData{
-		ModuleName:  util.GetModuleName(),
-		PackageName: util.ExtractPackageName(name),
+		ModuleName:  lib.GetModuleName(),
+		PackageName: lib.ExtractPackageName(name),
 		CmdArg:      name,
 	}
 

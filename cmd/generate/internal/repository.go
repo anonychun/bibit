@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/anonychun/bibit/internal/util"
+	"github.com/anonychun/bibit/internal/lib"
 )
 
 func GenerateRepository(name string) error {
@@ -15,8 +15,8 @@ func GenerateRepository(name string) error {
 	}
 
 	data := TemplateData{
-		ModuleName:  util.GetModuleName(),
-		PackageName: util.ExtractPackageName(name),
+		ModuleName:  lib.GetModuleName(),
+		PackageName: lib.ExtractPackageName(name),
 	}
 
 	err = generateFile(filepath.Join(targetDir, "repository.go"), repositoryTemplate, data)

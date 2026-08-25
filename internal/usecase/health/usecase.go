@@ -1,6 +1,8 @@
 package health
 
 import (
+	"context"
+
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/samber/do/v2"
 )
@@ -10,7 +12,7 @@ func init() {
 }
 
 type IUsecase interface {
-	Up() (*UpResponse, error)
+	Up(ctx context.Context) (*UpResponse, error)
 }
 
 type Usecase struct {
@@ -22,7 +24,7 @@ func NewUsecase(i do.Injector) (*Usecase, error) {
 	return &Usecase{}, nil
 }
 
-func (u *Usecase) Up() (*UpResponse, error) {
+func (u *Usecase) Up(ctx context.Context) (*UpResponse, error) {
 	return &UpResponse{
 		Status: "UP",
 	}, nil

@@ -4,6 +4,7 @@ import (
 	"github.com/anonychun/bibit/public"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func namespace(e *echo.Group, path string, f func(e *echo.Group)) {
@@ -32,6 +33,8 @@ func (s *HttpServer) routes() error {
 
 	s.echo.GET("/up", s.healthHttpHandler.Up)
 	s.echo.StaticFS("/", public.PublicFs)
+
+	s.echo.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 
 	return nil
 }

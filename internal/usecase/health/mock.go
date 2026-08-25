@@ -246,8 +246,8 @@ func (_m *MockIUsecase) EXPECT() *MockIUsecase_Expecter {
 }
 
 // Up provides a mock function for the type MockIUsecase
-func (_mock *MockIUsecase) Up() (*UpResponse, error) {
-	ret := _mock.Called()
+func (_mock *MockIUsecase) Up(ctx context.Context) (*UpResponse, error) {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Up")
@@ -255,18 +255,18 @@ func (_mock *MockIUsecase) Up() (*UpResponse, error) {
 
 	var r0 *UpResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (*UpResponse, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (*UpResponse, error)); ok {
+		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func() *UpResponse); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) *UpResponse); ok {
+		r0 = returnFunc(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*UpResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -279,13 +279,20 @@ type MockIUsecase_Up_Call struct {
 }
 
 // Up is a helper method to define mock.On call
-func (_e *MockIUsecase_Expecter) Up() *MockIUsecase_Up_Call {
-	return &MockIUsecase_Up_Call{Call: _e.mock.On("Up")}
+//   - ctx context.Context
+func (_e *MockIUsecase_Expecter) Up(ctx any) *MockIUsecase_Up_Call {
+	return &MockIUsecase_Up_Call{Call: _e.mock.On("Up", ctx)}
 }
 
-func (_c *MockIUsecase_Up_Call) Run(run func()) *MockIUsecase_Up_Call {
+func (_c *MockIUsecase_Up_Call) Run(run func(ctx context.Context)) *MockIUsecase_Up_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
@@ -295,7 +302,7 @@ func (_c *MockIUsecase_Up_Call) Return(upResponse *UpResponse, err error) *MockI
 	return _c
 }
 
-func (_c *MockIUsecase_Up_Call) RunAndReturn(run func() (*UpResponse, error)) *MockIUsecase_Up_Call {
+func (_c *MockIUsecase_Up_Call) RunAndReturn(run func(ctx context.Context) (*UpResponse, error)) *MockIUsecase_Up_Call {
 	_c.Call.Return(run)
 	return _c
 }

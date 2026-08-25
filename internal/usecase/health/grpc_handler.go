@@ -30,7 +30,7 @@ func NewGrpcHandler(i do.Injector) (*GrpcHandler, error) {
 }
 
 func (h *GrpcHandler) Up(ctx context.Context, req *pb.UpRequest) (*pb.UpResponse, error) {
-	res, err := h.usecase.Up()
+	res, err := h.usecase.Up(ctx)
 	if err != nil {
 		return nil, err
 	}
