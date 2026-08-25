@@ -28,7 +28,7 @@ func NewHttpHandler(i do.Injector) (*HttpHandler, error) {
 }
 
 func (h *HttpHandler) Up(c *echo.Context) error {
-	res, err := h.usecase.Up()
+	res, err := h.usecase.Up(c.Request().Context())
 	if err != nil {
 		return err
 	}
