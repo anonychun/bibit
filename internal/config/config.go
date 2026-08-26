@@ -41,6 +41,10 @@ type Config struct {
 			UrlExpiration   time.Duration `envconfig:"url_expiration"`
 		} `envconfig:"s3"`
 	} `envconfig:"storage"`
+
+	OTLP struct {
+		Endpoint string `envconfig:"endpoint"`
+	} `envconfig:"otlp"`
 }
 
 func NewConfig(i do.Injector) (*Config, error) {

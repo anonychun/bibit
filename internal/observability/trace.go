@@ -5,6 +5,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
@@ -13,9 +14,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func newTracer(serviceName string) (trace.Tracer, error) {
+func newTracer(serviceName, otlpEndpoint string) (trace.Tracer, error) {
 	conn, err := grpc.NewClient(
-		"localhost:4317",
+		otlpEndpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -30,6 +31,7 @@ func newTracer(serviceName string) (trace.Tracer, error) {
 
 	res, err := resource.New(
 		ctx,
+		resource.WithContainerID(),
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String(serviceName),
 		),
@@ -41,7 +43,9 @@ func newTracer(serviceName string) (trace.Tracer, error) {
 		sdktrace.WithResource(res),
 		sdktrace.WithSpanProcessor(bsp),
 	)
+
 	otel.SetTracerProvider(provider)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	tracer := provider.Tracer(serviceName)
 	return tracer, nil
