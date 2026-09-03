@@ -137,7 +137,7 @@ func TestUsecase_SignIn(t *testing.T) {
 		}
 		userID := uuid.New()
 		user := &entity.User{
-			Base:         entity.Base{Id: userID},
+			Id:           userID,
 			Name:         "Ada Lovelace",
 			EmailAddress: req.EmailAddress,
 		}
@@ -258,7 +258,7 @@ func TestUsecase_SignIn(t *testing.T) {
 		ctx := context.Background()
 		req := SignInRequest{EmailAddress: "ada@example.com", Password: "correct horse battery staple"}
 		expectedErr := errors.New("create user session")
-		user := &entity.User{Base: entity.Base{Id: uuid.New()}, EmailAddress: req.EmailAddress}
+		user := &entity.User{Id: uuid.New(), EmailAddress: req.EmailAddress}
 		require.NoError(t, user.HashPassword(req.Password))
 
 		validator := validation.NewMockIValidator(t)
@@ -314,7 +314,7 @@ func TestUsecase_Me(t *testing.T) {
 	t.Run("returns the current user", func(t *testing.T) {
 		userID := uuid.New()
 		ctx := current.SetUser(context.Background(), &entity.User{
-			Base:         entity.Base{Id: userID},
+			Id:           userID,
 			Name:         "Ada Lovelace",
 			EmailAddress: "ada@example.com",
 		})
