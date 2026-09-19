@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"testing"
 	"time"
-	"uuid"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
 	"github.com/anonychun/bibit/internal/entity"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/uptrace/bun"

@@ -1,8 +1,7 @@
 package entity
 
 import (
-	"uuid"
-
+	"github.com/google/uuid"
 	"github.com/oklog/ulid/v2"
 )
 

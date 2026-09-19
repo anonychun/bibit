@@ -1,6 +1,6 @@
 package auth
 
-import "uuid"
+import "github.com/google/uuid"
 
 type SignUpRequest struct {
 	IpAddress    string `json:"-"`

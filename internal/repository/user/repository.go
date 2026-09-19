@@ -2,11 +2,11 @@ package user
 
 import (
 	"context"
-	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
 	"github.com/anonychun/bibit/internal/entity"
+	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 )
 
