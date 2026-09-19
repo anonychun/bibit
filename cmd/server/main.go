@@ -28,6 +28,7 @@ func main() {
 				g, ctx := errgroup.WithContext(ctx)
 				g.Go(func() error { return httpSrv.Start(ctx) })
 				g.Go(func() error { return grpcSrv.Start(ctx) })
+
 				return g.Wait()
 			},
 		},

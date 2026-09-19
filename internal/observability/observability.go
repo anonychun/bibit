@@ -1,6 +1,7 @@
 package observability
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
@@ -8,7 +9,10 @@ import (
 	"github.com/anonychun/bibit/internal/lib"
 	"github.com/samber/do/v2"
 	"go.opentelemetry.io/otel/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 func init() {
@@ -22,6 +26,9 @@ type IObservability interface {
 }
 
 type Observability struct {
+	meterProvider  *sdkmetric.MeterProvider
+	tracerProvider *sdktrace.TracerProvider
+
 	logger *slog.Logger
 	meter  metric.Meter
 	tracer trace.Tracer
@@ -38,17 +45,22 @@ func NewObservability(i do.Injector) (*Observability, error) {
 		return nil, err
 	}
 
-	meter, err := newMeter(serviceName)
+	meterProvider, err := newMeterProvider()
 	if err != nil {
 		return nil, err
 	}
+	meter := meterProvider.Meter(serviceName)
 
-	tracer, err := newTracer(serviceName, cfg.OTLP.Endpoint)
+	tracerProvider, err := newTracerProvider(serviceName, cfg.OTLP.Endpoint)
 	if err != nil {
 		return nil, err
 	}
+	tracer := tracerProvider.Tracer(serviceName)
 
 	return &Observability{
+		meterProvider:  meterProvider,
+		tracerProvider: tracerProvider,
+
 		logger: logger,
 		meter:  meter,
 		tracer: tracer,
@@ -65,4 +77,12 @@ func (o *Observability) Meter() metric.Meter {
 
 func (o *Observability) Tracer() trace.Tracer {
 	return o.tracer
+}
+
+func (o *Observability) Shutdown(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error { return o.meterProvider.Shutdown(ctx) })
+	g.Go(func() error { return o.tracerProvider.Shutdown(ctx) })
+
+	return g.Wait()
 }
