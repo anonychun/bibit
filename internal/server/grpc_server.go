@@ -8,7 +8,6 @@ import (
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/config"
-	"github.com/anonychun/bibit/internal/observability"
 	usecaseHealth "github.com/anonychun/bibit/internal/usecase/health"
 	pbHealth "github.com/anonychun/bibit/pkg/pb/health"
 	"github.com/samber/do/v2"
@@ -25,16 +24,14 @@ type IGrpcServer interface {
 }
 
 type GrpcServer struct {
-	server        *grpc.Server
-	listener      net.Listener
-	observability observability.IObservability
+	server   *grpc.Server
+	listener net.Listener
 }
 
 var _ IGrpcServer = (*GrpcServer)(nil)
 
 func NewGrpcServer(i do.Injector) (*GrpcServer, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	o11y := do.MustInvoke[*observability.Observability](i)
 
 	srv := grpc.NewServer()
 	registerGrpcHandlers(i, srv)
@@ -46,14 +43,13 @@ func NewGrpcServer(i do.Injector) (*GrpcServer, error) {
 	}
 
 	return &GrpcServer{
-		server:        srv,
-		listener:      lis,
-		observability: o11y,
+		server:   srv,
+		listener: lis,
 	}, nil
 }
 
 func (s *GrpcServer) Start(ctx context.Context) error {
-	s.observability.Logger().Info("starting grpc server", slog.String("addr", s.listener.Addr().String()))
+	slog.Info("starting grpc server", slog.String("addr", s.listener.Addr().String()))
 	err := s.server.Serve(s.listener)
 	if err != nil {
 		return err
@@ -63,7 +59,7 @@ func (s *GrpcServer) Start(ctx context.Context) error {
 }
 
 func (s *GrpcServer) Shutdown(ctx context.Context) error {
-	s.observability.Logger().Info("shutting down grpc server")
+	slog.Info("shutting down grpc server")
 	s.server.GracefulStop()
 	return s.listener.Close()
 }

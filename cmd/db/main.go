@@ -8,6 +8,7 @@ import (
 	dbManager "github.com/anonychun/bibit/internal/db/manager"
 	dbMigrator "github.com/anonychun/bibit/internal/db/migrator"
 	dbSeeder "github.com/anonychun/bibit/internal/db/seeder"
+	_ "github.com/anonychun/bibit/internal/o11y"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )

@@ -2,10 +2,10 @@ package river
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
-	"github.com/anonychun/bibit/internal/observability"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
@@ -29,10 +29,8 @@ type Client struct {
 var _ IClient = (*Client)(nil)
 
 func NewClient(i do.Injector) (*Client, error) {
-	sqlDB := do.MustInvoke[*dbSql.PostgresDB](i)
-	o11y := do.MustInvoke[*observability.Observability](i)
-
 	ctx := context.Background()
+	sqlDB := do.MustInvoke[*dbSql.PostgresDB](i)
 	workers := river.NewWorkers()
 
 	riverClient, err := river.NewClient(riverpgxv5.New(sqlDB.PgxPool(ctx)), &river.Config{
@@ -40,7 +38,7 @@ func NewClient(i do.Injector) (*Client, error) {
 			river.QueueDefault: {MaxWorkers: 100},
 		},
 		Workers: workers,
-		Logger:  o11y.Logger(),
+		Logger:  slog.Default(),
 	})
 	if err != nil {
 		return nil, err

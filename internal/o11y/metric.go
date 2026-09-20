@@ -1,6 +1,7 @@
-package observability
+package o11y
 
 import (
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 )
@@ -14,6 +15,8 @@ func newMeterProvider() (*sdkmetric.MeterProvider, error) {
 	provider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(exporter),
 	)
+
+	otel.SetMeterProvider(provider)
 
 	return provider, nil
 }

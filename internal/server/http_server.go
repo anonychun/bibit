@@ -11,7 +11,6 @@ import (
 	"github.com/anonychun/bibit/internal/config"
 	middlewareAuth "github.com/anonychun/bibit/internal/middleware/auth"
 	middlewareLogger "github.com/anonychun/bibit/internal/middleware/logger"
-	"github.com/anonychun/bibit/internal/observability"
 	usecaseApiV1AppAuth "github.com/anonychun/bibit/internal/usecase/api/v1/app/auth"
 	usecaseHealth "github.com/anonychun/bibit/internal/usecase/health"
 	"github.com/labstack/echo/v5"
@@ -27,9 +26,8 @@ type IHttpServer interface {
 }
 
 type HttpServer struct {
-	echo          *echo.Echo
-	server        *http.Server
-	observability observability.IObservability
+	echo   *echo.Echo
+	server *http.Server
 
 	authMiddleware   middlewareAuth.IMiddleware
 	loggerMiddleware middlewareLogger.IMiddleware
@@ -43,10 +41,9 @@ var _ IHttpServer = (*HttpServer)(nil)
 
 func NewHttpServer(i do.Injector) (*HttpServer, error) {
 	cfg := do.MustInvoke[*config.Config](i)
-	o11y := do.MustInvoke[*observability.Observability](i)
 
 	e := echo.NewWithConfig(echo.Config{
-		Logger:           o11y.Logger(),
+		Logger:           slog.Default(),
 		HTTPErrorHandler: api.HttpErrorHandler,
 	})
 
@@ -56,9 +53,8 @@ func NewHttpServer(i do.Injector) (*HttpServer, error) {
 	}
 
 	return &HttpServer{
-		echo:          e,
-		server:        srv,
-		observability: o11y,
+		echo:   e,
+		server: srv,
 
 		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
@@ -75,7 +71,7 @@ func (s *HttpServer) Start(ctx context.Context) error {
 		return err
 	}
 
-	s.observability.Logger().Info("starting http server", slog.String("addr", s.server.Addr))
+	slog.Info("starting http server", slog.String("addr", s.server.Addr))
 	err = s.server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err
@@ -85,6 +81,6 @@ func (s *HttpServer) Start(ctx context.Context) error {
 }
 
 func (s *HttpServer) Shutdown(ctx context.Context) error {
-	s.observability.Logger().Info("shutting down http server")
+	slog.Info("shutting down http server")
 	return s.server.Shutdown(ctx)
 }

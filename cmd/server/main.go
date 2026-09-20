@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
+	_ "github.com/anonychun/bibit/internal/o11y"
 	"github.com/anonychun/bibit/internal/server"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"

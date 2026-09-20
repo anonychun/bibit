@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
-	"github.com/anonychun/bibit/internal/observability"
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
@@ -27,13 +26,11 @@ func (Args) Kind() string {
 type Job struct {
 	river.WorkerDefaults[Args]
 
-	observability  observability.IObservability
 	userRepository repositoryUser.IRepository
 }
 
 func NewJob(i do.Injector) (*Job, error) {
 	return &Job{
-		observability:  do.MustInvoke[*observability.Observability](i),
 		userRepository: do.MustInvoke[*repositoryUser.Repository](i),
 	}, nil
 }
@@ -44,6 +41,6 @@ func (j *Job) Work(ctx context.Context, job *river.Job[Args]) error {
 		return err
 	}
 
-	j.observability.Logger().Info("hello", slog.String("name", user.Name))
+	slog.Info("hello", slog.String("name", user.Name))
 	return nil
 }

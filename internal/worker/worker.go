@@ -2,11 +2,11 @@ package worker
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	clientRiver "github.com/anonychun/bibit/internal/client/river"
 	jobHello "github.com/anonychun/bibit/internal/job/hello"
-	"github.com/anonychun/bibit/internal/observability"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 )
@@ -20,8 +20,7 @@ type IWorker interface {
 }
 
 type Worker struct {
-	riverClient   clientRiver.IClient
-	observability observability.IObservability
+	riverClient clientRiver.IClient
 }
 
 var _ IWorker = (*Worker)(nil)
@@ -37,13 +36,12 @@ func NewWorker(i do.Injector) (*Worker, error) {
 	}
 
 	return &Worker{
-		riverClient:   riverClient,
-		observability: do.MustInvoke[*observability.Observability](i),
+		riverClient: riverClient,
 	}, nil
 }
 
 func (w *Worker) Start(ctx context.Context) error {
-	w.observability.Logger().Info("starting worker")
+	slog.Info("starting worker")
 	err := w.riverClient.Client().Start(ctx)
 	if err != nil {
 		return err
@@ -54,7 +52,7 @@ func (w *Worker) Start(ctx context.Context) error {
 }
 
 func (w *Worker) Shutdown(ctx context.Context) error {
-	w.observability.Logger().Info("shutting down worker")
+	slog.Info("shutting down worker")
 	return w.riverClient.Client().Stop(ctx)
 }
 

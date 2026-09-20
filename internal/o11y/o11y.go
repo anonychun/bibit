@@ -1,4 +1,4 @@
-package observability
+package o11y
 
 import (
 	"context"
@@ -16,16 +16,17 @@ import (
 )
 
 func init() {
-	do.Provide(bootstrap.Injector, NewObservability)
+	do.Provide(bootstrap.Injector, NewO11y)
+	do.MustInvoke[*O11y](bootstrap.Injector)
 }
 
-type IObservability interface {
+type IO11y interface {
 	Logger() *slog.Logger
 	Meter() metric.Meter
 	Tracer() trace.Tracer
 }
 
-type Observability struct {
+type O11y struct {
 	meterProvider  *sdkmetric.MeterProvider
 	tracerProvider *sdktrace.TracerProvider
 
@@ -34,9 +35,9 @@ type Observability struct {
 	tracer trace.Tracer
 }
 
-var _ IObservability = (*Observability)(nil)
+var _ IO11y = (*O11y)(nil)
 
-func NewObservability(i do.Injector) (*Observability, error) {
+func NewO11y(i do.Injector) (*O11y, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	serviceName := lib.GetModuleName()
 
@@ -57,7 +58,7 @@ func NewObservability(i do.Injector) (*Observability, error) {
 	}
 	tracer := tracerProvider.Tracer(serviceName)
 
-	return &Observability{
+	return &O11y{
 		meterProvider:  meterProvider,
 		tracerProvider: tracerProvider,
 
@@ -67,19 +68,21 @@ func NewObservability(i do.Injector) (*Observability, error) {
 	}, nil
 }
 
-func (o *Observability) Logger() *slog.Logger {
+func (o *O11y) Logger() *slog.Logger {
 	return o.logger
 }
 
-func (o *Observability) Meter() metric.Meter {
+func (o *O11y) Meter() metric.Meter {
 	return o.meter
 }
 
-func (o *Observability) Tracer() trace.Tracer {
+func (o *O11y) Tracer() trace.Tracer {
 	return o.tracer
 }
 
-func (o *Observability) Shutdown(ctx context.Context) error {
+func (o *O11y) Shutdown(ctx context.Context) error {
+	slog.Info("shutting down o11y")
+
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error { return o.meterProvider.Shutdown(ctx) })
 	g.Go(func() error { return o.tracerProvider.Shutdown(ctx) })

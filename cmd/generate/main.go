@@ -7,6 +7,7 @@ import (
 
 	"github.com/anonychun/bibit/cmd/generate/internal"
 	"github.com/anonychun/bibit/internal/bootstrap"
+	_ "github.com/anonychun/bibit/internal/o11y"
 	"github.com/urfave/cli/v3"
 )
 

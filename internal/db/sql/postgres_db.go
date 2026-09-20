@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"runtime"
 	"time"
@@ -89,6 +90,7 @@ func (pd *PostgresDB) PgxPool(ctx context.Context) *pgxpool.Pool {
 }
 
 func (pd *PostgresDB) Shutdown(ctx context.Context) error {
+	slog.Info("shutting down postgres db")
 	pd.pgxPool.Close()
 	return nil
 }
