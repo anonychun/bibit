@@ -28,6 +28,7 @@ type IUsecase interface {
 
 type Usecase struct {
 	validator             validation.IValidator
+	repository            repository.IRepository
 	userRepository        repositoryUser.IRepository
 	userSessionRepository repositoryUserSession.IRepository
 }
@@ -37,6 +38,7 @@ var _ IUsecase = (*Usecase)(nil)
 func NewUsecase(i do.Injector) (*Usecase, error) {
 	return &Usecase{
 		validator:             do.MustInvoke[*validation.Validator](i),
+		repository:            do.MustInvoke[*repository.Repository](i),
 		userRepository:        do.MustInvoke[*repositoryUser.Repository](i),
 		userSessionRepository: do.MustInvoke[*repositoryUserSession.Repository](i),
 	}, nil
@@ -68,7 +70,7 @@ func (u *Usecase) SignUp(ctx context.Context, req SignUpRequest) (*SignUpRespons
 	}
 
 	res := &SignUpResponse{}
-	err = repository.Transaction(ctx, func(ctx context.Context) error {
+	err = u.repository.Transaction(ctx, func(ctx context.Context) error {
 		err = u.userRepository.Create(ctx, user)
 		if err != nil {
 			return err

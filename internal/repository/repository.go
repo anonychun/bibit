@@ -11,13 +11,28 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	sqlDB, err := do.Invoke[*dbSql.PostgresDB](bootstrap.Injector)
-	if err != nil {
-		return err
-	}
+func init() {
+	do.Provide(bootstrap.Injector, NewRepository)
+}
 
-	return sqlDB.DB(ctx).RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+type IRepository interface {
+	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type Repository struct {
+	sqlDB dbSql.IDB
+}
+
+var _ IRepository = (*Repository)(nil)
+
+func NewRepository(i do.Injector) (*Repository, error) {
+	return &Repository{
+		sqlDB: do.MustInvoke[*dbSql.PostgresDB](i),
+	}, nil
+}
+
+func (r *Repository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	return r.sqlDB.DB(ctx).RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		ctx = current.SetTx(ctx, &tx)
 		return fn(ctx)
 	})

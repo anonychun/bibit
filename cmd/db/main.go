@@ -8,12 +8,17 @@ import (
 	dbManager "github.com/anonychun/bibit/internal/db/manager"
 	dbMigrator "github.com/anonychun/bibit/internal/db/migrator"
 	dbSeeder "github.com/anonychun/bibit/internal/db/seeder"
-	_ "github.com/anonychun/bibit/internal/o11y"
+	"github.com/anonychun/bibit/internal/o11y"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
+	err := o11y.Setup(bootstrap.Injector)
+	if err != nil {
+		log.Fatalln("Failed to setup o11y:", err)
+	}
+
 	cmd := &cli.Command{
 		Name:  "db",
 		Usage: "Manage the database",
@@ -107,7 +112,7 @@ func main() {
 		},
 	}
 
-	err := bootstrap.RunCommand(context.Background(), cmd)
+	err = bootstrap.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}

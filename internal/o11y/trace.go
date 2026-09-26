@@ -35,6 +35,9 @@ func newTracerProvider(serviceName, otlpEndpoint string) (*sdktrace.TracerProvid
 			semconv.ServiceNameKey.String(serviceName),
 		),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	bsp := sdktrace.NewBatchSpanProcessor(exporter)
 	provider := sdktrace.NewTracerProvider(

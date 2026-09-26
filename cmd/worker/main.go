@@ -5,13 +5,18 @@ import (
 	"log"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
-	_ "github.com/anonychun/bibit/internal/o11y"
+	"github.com/anonychun/bibit/internal/o11y"
 	"github.com/anonychun/bibit/internal/worker"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
+	err := o11y.Setup(bootstrap.Injector)
+	if err != nil {
+		log.Fatalln("Failed to setup o11y:", err)
+	}
+
 	cmd := &cli.Command{
 		Name:  "worker",
 		Usage: "Manage the worker process",
@@ -28,7 +33,7 @@ func main() {
 		},
 	}
 
-	err := bootstrap.RunCommand(context.Background(), cmd)
+	err = bootstrap.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}

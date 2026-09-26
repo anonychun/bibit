@@ -11,6 +11,7 @@ import (
 	"github.com/anonychun/bibit/internal/consts"
 	"github.com/anonychun/bibit/internal/current"
 	"github.com/anonychun/bibit/internal/entity"
+	"github.com/anonychun/bibit/internal/repository"
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
 	repositoryUserSession "github.com/anonychun/bibit/internal/repository/user_session"
 	"github.com/anonychun/bibit/internal/validation"
@@ -122,6 +123,93 @@ func TestUsecase_SignUp(t *testing.T) {
 		res, err := usecase.SignUp(ctx, req)
 
 		require.ErrorIs(t, err, bcrypt.ErrPasswordTooLong)
+		assert.Nil(t, res)
+	})
+
+	t.Run("creates the user and a session in one transaction", func(t *testing.T) {
+		ctx := context.Background()
+		txCtx := context.WithValue(ctx, struct{}{}, "tx")
+		req := SignUpRequest{
+			IpAddress:    "127.0.0.1",
+			UserAgent:    "Go test",
+			Name:         "Ada Lovelace",
+			EmailAddress: "ada@example.com",
+			Password:     "correct horse battery staple",
+		}
+		userID := uuid.New()
+		validator := validation.NewMockIValidator(t)
+		repository := repository.NewMockIRepository(t)
+		userRepository := repositoryUser.NewMockIRepository(t)
+		userSessionRepository := repositoryUserSession.NewMockIRepository(t)
+		usecase := &Usecase{
+			validator:             validator,
+			repository:            repository,
+			userRepository:        userRepository,
+			userSessionRepository: userSessionRepository,
+		}
+
+		validator.EXPECT().Struct(mock.Anything).Return(api.ValidationError{}).Once()
+		userRepository.EXPECT().ExistsByEmailAddress(ctx, req.EmailAddress).Return(false, nil).Once()
+		repository.EXPECT().Transaction(ctx, mock.Anything).RunAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+			return fn(txCtx)
+		}).Once()
+
+		var createdUser *entity.User
+		userRepository.EXPECT().Create(txCtx, mock.AnythingOfType("*entity.User")).Run(func(ctx context.Context, actual *entity.User) {
+			actual.Id = userID
+			createdUser = actual
+		}).Return(nil).Once()
+
+		var createdSession *entity.UserSession
+		userSessionRepository.EXPECT().Create(txCtx, mock.AnythingOfType("*entity.UserSession")).Run(func(ctx context.Context, actual *entity.UserSession) {
+			createdSession = actual
+		}).Return(nil).Once()
+
+		res, err := usecase.SignUp(ctx, req)
+
+		require.NoError(t, err)
+		require.NotNil(t, res)
+		require.NotNil(t, createdUser)
+		assert.Equal(t, req.Name, createdUser.Name)
+		assert.Equal(t, req.EmailAddress, createdUser.EmailAddress)
+		require.NoError(t, createdUser.ComparePassword(req.Password))
+		require.NotNil(t, createdSession)
+		assert.Equal(t, userID, createdSession.UserId)
+		assert.Equal(t, req.IpAddress, createdSession.IpAddress)
+		assert.Equal(t, req.UserAgent, createdSession.UserAgent)
+		assert.Equal(t, createdSession.Token, res.Token)
+	})
+
+	t.Run("returns the error from the transaction when session creation fails", func(t *testing.T) {
+		ctx := context.Background()
+		req := SignUpRequest{
+			Name:         "Ada Lovelace",
+			EmailAddress: "ada@example.com",
+			Password:     "correct horse battery staple",
+		}
+		expectedErr := errors.New("create session")
+		validator := validation.NewMockIValidator(t)
+		repository := repository.NewMockIRepository(t)
+		userRepository := repositoryUser.NewMockIRepository(t)
+		userSessionRepository := repositoryUserSession.NewMockIRepository(t)
+		usecase := &Usecase{
+			validator:             validator,
+			repository:            repository,
+			userRepository:        userRepository,
+			userSessionRepository: userSessionRepository,
+		}
+
+		validator.EXPECT().Struct(mock.Anything).Return(api.ValidationError{}).Once()
+		userRepository.EXPECT().ExistsByEmailAddress(ctx, req.EmailAddress).Return(false, nil).Once()
+		repository.EXPECT().Transaction(ctx, mock.Anything).RunAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+			return fn(ctx)
+		}).Once()
+		userRepository.EXPECT().Create(ctx, mock.AnythingOfType("*entity.User")).Return(nil).Once()
+		userSessionRepository.EXPECT().Create(ctx, mock.AnythingOfType("*entity.UserSession")).Return(expectedErr).Once()
+
+		res, err := usecase.SignUp(ctx, req)
+
+		require.ErrorIs(t, err, expectedErr)
 		assert.Nil(t, res)
 	})
 }
