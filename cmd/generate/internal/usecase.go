@@ -24,7 +24,7 @@ func GenerateUsecase(name string) error {
 		return err
 	}
 
-	err = generateFile(filepath.Join(targetDir, "handler.go"), handlerTemplate, data)
+	err = generateFile(filepath.Join(targetDir, "http_handler.go"), httpHandlerTemplate, data)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func NewUsecase(i do.Injector) (*Usecase, error) {
 }
 `
 
-const handlerTemplate = `package {{.PackageName}}
+const httpHandlerTemplate = `package {{.PackageName}}
 
 import (
 	"{{.ModuleName}}/internal/bootstrap"
@@ -69,20 +69,20 @@ import (
 )
 
 func init() {
-	do.Provide(bootstrap.Injector, NewHandler)
+	do.Provide(bootstrap.Injector, NewHttpHandler)
 }
 
-type IHandler interface {
+type IHttpHandler interface {
 }
 
-type Handler struct {
+type HttpHandler struct {
 	usecase IUsecase
 }
 
-var _ IHandler = (*Handler)(nil)
+var _ IHttpHandler = (*HttpHandler)(nil)
 
-func NewHandler(i do.Injector) (*Handler, error) {
-	return &Handler{
+func NewHttpHandler(i do.Injector) (*HttpHandler, error) {
+	return &HttpHandler{
 		usecase: do.MustInvoke[*Usecase](i),
 	}, nil
 }

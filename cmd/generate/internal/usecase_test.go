@@ -10,7 +10,7 @@ import (
 )
 
 func TestGenerateUsecase(t *testing.T) {
-	t.Run("creates usecase, handler, and dto files for the requested package", func(t *testing.T) {
+	t.Run("creates usecase, http handler, and dto files for the requested package", func(t *testing.T) {
 		t.Chdir(t.TempDir())
 
 		err := GenerateUsecase("api/v1/app/profile")
@@ -20,7 +20,7 @@ func TestGenerateUsecase(t *testing.T) {
 		baseDir := filepath.Join("internal", "usecase", "api", "v1", "app", "profile")
 		usecaseContent, err := os.ReadFile(filepath.Join(baseDir, "usecase.go"))
 		require.NoError(t, err)
-		handlerContent, err := os.ReadFile(filepath.Join(baseDir, "handler.go"))
+		httpHandlerContent, err := os.ReadFile(filepath.Join(baseDir, "http_handler.go"))
 		require.NoError(t, err)
 		dtoContent, err := os.ReadFile(filepath.Join(baseDir, "dto.go"))
 		require.NoError(t, err)
@@ -28,9 +28,9 @@ func TestGenerateUsecase(t *testing.T) {
 		assert.Contains(t, string(usecaseContent), "package profile")
 		assert.Contains(t, string(usecaseContent), "type IUsecase interface")
 		assert.Contains(t, string(usecaseContent), "func NewUsecase")
-		assert.Contains(t, string(handlerContent), "package profile")
-		assert.Contains(t, string(handlerContent), "type IHandler interface")
-		assert.Contains(t, string(handlerContent), "func NewHandler")
+		assert.Contains(t, string(httpHandlerContent), "package profile")
+		assert.Contains(t, string(httpHandlerContent), "type IHttpHandler interface")
+		assert.Contains(t, string(httpHandlerContent), "func NewHttpHandler")
 		assert.Equal(t, "package profile\n", string(dtoContent))
 	})
 
@@ -53,10 +53,10 @@ func TestGenerateUsecase(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("returns handler file generation errors", func(t *testing.T) {
+	t.Run("returns http handler file generation errors", func(t *testing.T) {
 		t.Chdir(t.TempDir())
 		baseDir := filepath.Join("internal", "usecase", "api", "v1", "app", "profile")
-		require.NoError(t, os.MkdirAll(filepath.Join(baseDir, "handler.go"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(baseDir, "http_handler.go"), os.ModePerm))
 
 		err := GenerateUsecase("api/v1/app/profile")
 
