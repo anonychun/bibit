@@ -3,15 +3,11 @@ package config
 import (
 	"time"
 
-	"github.com/anonychun/bibit/internal/bootstrap"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/samber/do/v2"
 )
 
-func init() {
-	do.Provide(bootstrap.Injector, NewConfig)
-}
+var cfg *Config
 
 type Config struct {
 	Http struct {
@@ -47,12 +43,24 @@ type Config struct {
 	} `envconfig:"otlp"`
 }
 
-func NewConfig(i do.Injector) (*Config, error) {
+func Setup() error {
 	config := &Config{}
 	err := envconfig.Process("", config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return config, nil
+	cfg = config
+	return nil
+}
+
+func Get() *Config {
+	if cfg == nil {
+		err := Setup()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return cfg
 }

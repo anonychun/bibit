@@ -16,7 +16,8 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
-func OpenPostgres(ctx context.Context, cfg *config.Config, dbName string) (*pgxpool.Pool, *bun.DB, error) {
+func OpenPostgres(ctx context.Context, dbName string) (*pgxpool.Pool, *bun.DB, error) {
+	cfg := config.Get()
 	dsn := &url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(cfg.DB.Sql.User, cfg.DB.Sql.Password),

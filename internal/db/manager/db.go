@@ -23,15 +23,13 @@ type IDB interface {
 type DB struct {
 	pgxPool *pgxpool.Pool
 	bunDB   *bun.DB
-	config  *config.Config
 }
 
 var _ IDB = (*DB)(nil)
 
 func NewDB(i do.Injector) (*DB, error) {
 	ctx := context.Background()
-	cfg := do.MustInvoke[*config.Config](i)
-	pgxPool, bunDB, err := internal.OpenPostgres(ctx, cfg, "postgres")
+	pgxPool, bunDB, err := internal.OpenPostgres(ctx, "postgres")
 	if err != nil {
 		return nil, err
 	}
@@ -39,13 +37,12 @@ func NewDB(i do.Injector) (*DB, error) {
 	return &DB{
 		pgxPool: pgxPool,
 		bunDB:   bunDB,
-		config:  cfg,
 	}, nil
 }
 
 func (d *DB) CreateDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", d.config.DB.Sql.Name).Scan(ctx, &exists)
+	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", config.Get().DB.Sql.Name).Scan(ctx, &exists)
 	if err != nil {
 		return err
 	}
@@ -54,13 +51,13 @@ func (d *DB) CreateDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	_, err = d.bunDB.NewRaw("CREATE DATABASE ?", bun.Ident(d.config.DB.Sql.Name)).Exec(ctx)
+	_, err = d.bunDB.NewRaw("CREATE DATABASE ?", bun.Ident(config.Get().DB.Sql.Name)).Exec(ctx)
 	return err
 }
 
 func (d *DB) DropDatabase(ctx context.Context) error {
 	var exists bool
-	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", d.config.DB.Sql.Name).Scan(ctx, &exists)
+	err := d.bunDB.NewRaw("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", config.Get().DB.Sql.Name).Scan(ctx, &exists)
 	if err != nil {
 		return err
 	}
@@ -69,7 +66,7 @@ func (d *DB) DropDatabase(ctx context.Context) error {
 		return nil
 	}
 
-	_, err = d.bunDB.NewRaw("DROP DATABASE ?", bun.Ident(d.config.DB.Sql.Name)).Exec(ctx)
+	_, err = d.bunDB.NewRaw("DROP DATABASE ?", bun.Ident(config.Get().DB.Sql.Name)).Exec(ctx)
 	return err
 }
 

@@ -17,8 +17,8 @@ func init() {
 	do.Provide(bootstrap.Injector, newO11y)
 }
 
-func Setup(i do.Injector) error {
-	_, err := do.Invoke[*o11y](i)
+func Setup() error {
+	_, err := do.Invoke[*o11y](bootstrap.Injector)
 	return err
 }
 
@@ -29,7 +29,6 @@ type o11y struct {
 }
 
 func newO11y(i do.Injector) (*o11y, error) {
-	cfg := do.MustInvoke[*config.Config](i)
 	serviceName := lib.GetModuleName()
 
 	logger, err := newLogger()
@@ -42,7 +41,7 @@ func newO11y(i do.Injector) (*o11y, error) {
 		return nil, err
 	}
 
-	tracerProvider, err := newTracerProvider(serviceName, cfg.OTLP.Endpoint)
+	tracerProvider, err := newTracerProvider(serviceName, config.Get().OTLP.Endpoint)
 	if err != nil {
 		return nil, err
 	}

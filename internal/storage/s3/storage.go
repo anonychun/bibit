@@ -26,14 +26,13 @@ type IStorage interface {
 type Storage struct {
 	client        *s3.Client
 	presignClient *s3.PresignClient
-	config        *config.Config
 }
 
 var _ IStorage = (*Storage)(nil)
 
 func NewStorage(i do.Injector) (*Storage, error) {
 	ctx := context.Background()
-	cfg := do.MustInvoke[*config.Config](i)
+	cfg := config.Get()
 
 	awsCfg, err := awsConfig.LoadDefaultConfig(
 		ctx,
@@ -55,13 +54,12 @@ func NewStorage(i do.Injector) (*Storage, error) {
 	return &Storage{
 		client:        client,
 		presignClient: s3.NewPresignClient(client),
-		config:        cfg,
 	}, nil
 }
 
 func (s *Storage) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
 	if params.Bucket == nil {
-		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
+		params.Bucket = aws.String(config.Get().Storage.S3.Bucket)
 	}
 
 	return s.client.PutObject(ctx, params, optFns...)
@@ -69,7 +67,7 @@ func (s *Storage) PutObject(ctx context.Context, params *s3.PutObjectInput, optF
 
 func (s *Storage) GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 	if params.Bucket == nil {
-		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
+		params.Bucket = aws.String(config.Get().Storage.S3.Bucket)
 	}
 
 	return s.client.GetObject(ctx, params, optFns...)
@@ -77,7 +75,7 @@ func (s *Storage) GetObject(ctx context.Context, params *s3.GetObjectInput, optF
 
 func (s *Storage) PresignGetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error) {
 	if params.Bucket == nil {
-		params.Bucket = aws.String(s.config.Storage.S3.Bucket)
+		params.Bucket = aws.String(config.Get().Storage.S3.Bucket)
 	}
 
 	return s.presignClient.PresignGetObject(ctx, params, optFns...)

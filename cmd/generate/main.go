@@ -6,15 +6,14 @@ import (
 	"log"
 
 	"github.com/anonychun/bibit/cmd/generate/internal"
-	"github.com/anonychun/bibit/internal/bootstrap"
-	"github.com/anonychun/bibit/internal/o11y"
+	"github.com/anonychun/bibit/internal/bootstrap/app"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	err := o11y.Setup(bootstrap.Injector)
+	err := app.Setup()
 	if err != nil {
-		log.Fatalln("Failed to setup o11y:", err)
+		log.Fatalln("Failed to setup:", err)
 	}
 
 	cmd := &cli.Command{
@@ -114,7 +113,7 @@ func main() {
 		},
 	}
 
-	err = bootstrap.RunCommand(context.Background(), cmd)
+	err = app.RunCommand(context.Background(), cmd)
 	if err != nil {
 		log.Fatalln("Failed to run command:", err)
 	}

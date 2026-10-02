@@ -40,15 +40,13 @@ type HttpServer struct {
 var _ IHttpServer = (*HttpServer)(nil)
 
 func NewHttpServer(i do.Injector) (*HttpServer, error) {
-	cfg := do.MustInvoke[*config.Config](i)
-
 	e := echo.NewWithConfig(echo.Config{
 		Logger:           slog.Default(),
 		HTTPErrorHandler: api.HttpErrorHandler,
 	})
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Http.Port),
+		Addr:    fmt.Sprintf(":%d", config.Get().Http.Port),
 		Handler: e,
 	}
 

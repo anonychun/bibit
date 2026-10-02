@@ -31,13 +31,11 @@ type GrpcServer struct {
 var _ IGrpcServer = (*GrpcServer)(nil)
 
 func NewGrpcServer(i do.Injector) (*GrpcServer, error) {
-	cfg := do.MustInvoke[*config.Config](i)
-
 	srv := grpc.NewServer()
 	registerGrpcHandlers(i, srv)
 	reflection.Register(srv)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Grpc.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Get().Grpc.Port))
 	if err != nil {
 		return nil, err
 	}

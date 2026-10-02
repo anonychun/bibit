@@ -26,9 +26,8 @@ var _ IDB = (*PostgresDB)(nil)
 
 func NewPostgresDB(i do.Injector) (*PostgresDB, error) {
 	ctx := context.Background()
-	cfg := do.MustInvoke[*config.Config](i)
 
-	pgxPool, bunDB, err := internal.OpenPostgres(ctx, cfg, cfg.DB.Sql.Name)
+	pgxPool, bunDB, err := internal.OpenPostgres(ctx, config.Get().DB.Sql.Name)
 	if err != nil {
 		return nil, err
 	}
