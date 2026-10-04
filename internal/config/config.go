@@ -38,6 +38,25 @@ type Config struct {
 		} `envconfig:"s3"`
 	} `envconfig:"storage"`
 
+	Broker struct {
+		Backend string `envconfig:"backend"`
+
+		Kafka struct {
+			Brokers      []string      `envconfig:"brokers"`
+			GroupId      string        `envconfig:"group_id"`
+			BatchSize    int           `envconfig:"batch_size"`
+			BatchTimeout time.Duration `envconfig:"batch_timeout"`
+		} `envconfig:"kafka"`
+
+		Rabbitmq struct {
+			Url          string        `envconfig:"url"`
+			Exchange     string        `envconfig:"exchange"`
+			GroupId      string        `envconfig:"group_id"`
+			BatchSize    int           `envconfig:"batch_size"`
+			BatchTimeout time.Duration `envconfig:"batch_timeout"`
+		} `envconfig:"rabbitmq"`
+	} `envconfig:"broker"`
+
 	OTLP struct {
 		Endpoint string `envconfig:"endpoint"`
 	} `envconfig:"otlp"`
