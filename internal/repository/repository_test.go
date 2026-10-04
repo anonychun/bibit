@@ -5,10 +5,10 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
-	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -50,7 +50,7 @@ func TestRepository_Transaction(t *testing.T) {
 func newScratchTable(t *testing.T, ctx context.Context, sqlDB dbSql.IDB) bun.Ident {
 	t.Helper()
 
-	table := bun.Ident("transaction_test_" + strings.ReplaceAll(uuid.NewString(), "-", ""))
+	table := bun.Ident("transaction_test_" + strings.ReplaceAll(uuid.New().String(), "-", ""))
 	_, err := sqlDB.DB(ctx).NewRaw("CREATE TABLE ? (id integer)", table).Exec(ctx)
 	require.NoError(t, err)
 

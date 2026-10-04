@@ -6,9 +6,9 @@ package user
 
 import (
 	"context"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/entity"
-	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
 

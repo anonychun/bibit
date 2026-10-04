@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/consts"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

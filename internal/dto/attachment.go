@@ -2,13 +2,13 @@ package dto
 
 import (
 	"context"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	"github.com/anonychun/bibit/internal/entity"
 	storageS3 "github.com/anonychun/bibit/internal/storage/s3"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 )
 

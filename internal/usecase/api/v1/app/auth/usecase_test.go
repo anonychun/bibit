@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/api"
 	"github.com/anonychun/bibit/internal/consts"
@@ -15,7 +16,6 @@ import (
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
 	repositoryUserSession "github.com/anonychun/bibit/internal/repository/user_session"
 	"github.com/anonychun/bibit/internal/validation"
-	"github.com/google/uuid"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
 	"github.com/anonychun/bibit/internal/entity"
-	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,7 @@ func TestRepository_Create(t *testing.T) {
 		err := repository.Create(ctx, userSession)
 
 		require.NoError(t, err)
-		assert.NotEqual(t, uuid.Nil, userSession.Id)
+		assert.NotEqual(t, uuid.Nil(), userSession.Id)
 	})
 
 	t.Run("rejects a session for a user that does not exist", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestRepository_DeleteByToken(t *testing.T) {
 func newUserSession(t *testing.T, ctx context.Context, sqlDB dbSql.IDB) *entity.UserSession {
 	t.Helper()
 
-	user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.NewString() + "@example.com", PasswordDigest: "password-digest"}
+	user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.New().String() + "@example.com", PasswordDigest: "password-digest"}
 	_, err := sqlDB.DB(ctx).NewInsert().Model(user).Exec(ctx)
 	require.NoError(t, err)
 

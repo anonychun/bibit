@@ -3,11 +3,11 @@ package user
 import (
 	"database/sql"
 	"testing"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	dbSql "github.com/anonychun/bibit/internal/db/sql"
 	"github.com/anonychun/bibit/internal/entity"
-	"github.com/google/uuid"
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,12 +17,12 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("inserts the user and fills in the generated columns", func(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
-		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.NewString() + "@example.com", PasswordDigest: "password-digest"}
+		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.New().String() + "@example.com", PasswordDigest: "password-digest"}
 
 		err := repository.Create(ctx, user)
 
 		require.NoError(t, err)
-		assert.NotEqual(t, uuid.Nil, user.Id)
+		assert.NotEqual(t, uuid.Nil(), user.Id)
 		assert.False(t, user.CreatedAt.IsZero())
 		assert.False(t, user.UpdatedAt.IsZero())
 	})
@@ -30,7 +30,7 @@ func TestRepository_Create(t *testing.T) {
 	t.Run("rejects a second user with the same email address", func(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
-		emailAddress := uuid.NewString() + "@example.com"
+		emailAddress := uuid.New().String() + "@example.com"
 		require.NoError(t, repository.Create(ctx, &entity.User{Name: "Ada", EmailAddress: emailAddress, PasswordDigest: "x"}))
 
 		err := repository.Create(ctx, &entity.User{Name: "Other Ada", EmailAddress: emailAddress, PasswordDigest: "y"})
@@ -43,7 +43,7 @@ func TestRepository_FindById(t *testing.T) {
 	t.Run("returns the user with that id", func(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
-		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.NewString() + "@example.com", PasswordDigest: "password-digest"}
+		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.New().String() + "@example.com", PasswordDigest: "password-digest"}
 		require.NoError(t, repository.Create(ctx, user))
 
 		actualUser, err := repository.FindById(ctx, user.Id)
@@ -70,7 +70,7 @@ func TestRepository_FindByEmailAddress(t *testing.T) {
 	t.Run("returns the user with that email address", func(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
-		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.NewString() + "@example.com", PasswordDigest: "password-digest"}
+		user := &entity.User{Name: "Ada Lovelace", EmailAddress: uuid.New().String() + "@example.com", PasswordDigest: "password-digest"}
 		require.NoError(t, repository.Create(ctx, user))
 
 		actualUser, err := repository.FindByEmailAddress(ctx, user.EmailAddress)
@@ -83,7 +83,7 @@ func TestRepository_FindByEmailAddress(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
 
-		actualUser, err := repository.FindByEmailAddress(ctx, uuid.NewString()+"@example.com")
+		actualUser, err := repository.FindByEmailAddress(ctx, uuid.New().String()+"@example.com")
 
 		require.ErrorIs(t, err, sql.ErrNoRows)
 		assert.Nil(t, actualUser)
@@ -94,14 +94,14 @@ func TestRepository_ExistsByEmailAddress(t *testing.T) {
 	t.Run("reports whether a user has that email address", func(t *testing.T) {
 		ctx := t.Context()
 		repository := &Repository{sqlDB: do.MustInvoke[*dbSql.PostgresDB](bootstrap.Injector)}
-		emailAddress := uuid.NewString() + "@example.com"
+		emailAddress := uuid.New().String() + "@example.com"
 		require.NoError(t, repository.Create(ctx, &entity.User{Name: "Ada", EmailAddress: emailAddress, PasswordDigest: "x"}))
 
 		exists, err := repository.ExistsByEmailAddress(ctx, emailAddress)
 		require.NoError(t, err)
 		assert.True(t, exists)
 
-		exists, err = repository.ExistsByEmailAddress(ctx, uuid.NewString()+"@example.com")
+		exists, err = repository.ExistsByEmailAddress(ctx, uuid.New().String()+"@example.com")
 		require.NoError(t, err)
 		assert.False(t, exists)
 	})

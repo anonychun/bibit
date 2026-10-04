@@ -3,10 +3,10 @@ package hello
 import (
 	"context"
 	"log/slog"
+	"uuid"
 
 	"github.com/anonychun/bibit/internal/bootstrap"
 	repositoryUser "github.com/anonychun/bibit/internal/repository/user"
-	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 )
