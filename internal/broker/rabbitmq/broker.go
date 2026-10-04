@@ -18,6 +18,7 @@ const (
 	defaultExchange     = "bibit"
 	defaultBatchSize    = 100
 	defaultBatchTimeout = 500 * time.Millisecond
+	defaultBackoff      = time.Second
 	maxAttempts         = 3
 )
 
@@ -35,6 +36,7 @@ type Broker struct {
 	groupId      string
 	batchSize    int
 	batchTimeout time.Duration
+	backoff      time.Duration
 }
 
 var _ IBroker = (*Broker)(nil)
@@ -76,6 +78,7 @@ func NewBroker(i do.Injector) (*Broker, error) {
 		groupId:      cfg.GroupId,
 		batchSize:    batchSize,
 		batchTimeout: batchTimeout,
+		backoff:      defaultBackoff,
 	}, nil
 }
 
@@ -103,30 +106,50 @@ func (b *Broker) consume(ctx context.Context, route consumer.Route) error {
 	defer ch.Close()
 
 	queue := b.queueName(route.Topic)
+	dlx := b.dlxName()
+	dlq := queue + ".dlq"
 
 	err = ch.ExchangeDeclare(b.exchange, "topic", true, false, false, false, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("declare exchange %q: %w", b.exchange, err)
 	}
 
-	_, err = ch.QueueDeclare(queue, true, false, false, false, nil)
+	err = ch.ExchangeDeclare(dlx, "direct", true, false, false, false, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("declare dead-letter exchange %q: %w", dlx, err)
+	}
+
+	_, err = ch.QueueDeclare(dlq, true, false, false, false, nil)
+	if err != nil {
+		return fmt.Errorf("declare dead-letter queue %q: %w", dlq, err)
+	}
+
+	err = ch.QueueBind(dlq, queue, dlx, false, nil)
+	if err != nil {
+		return fmt.Errorf("bind dead-letter queue %q: %w", dlq, err)
+	}
+
+	_, err = ch.QueueDeclare(queue, true, false, false, false, amqp091.Table{
+		"x-dead-letter-exchange":    dlx,
+		"x-dead-letter-routing-key": queue,
+	})
+	if err != nil {
+		return fmt.Errorf("declare queue %q: %w", queue, err)
 	}
 
 	err = ch.QueueBind(queue, route.Topic, b.exchange, false, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("bind queue %q: %w", queue, err)
 	}
 
 	err = ch.Qos(b.batchSize, 0, false)
 	if err != nil {
-		return err
+		return fmt.Errorf("set qos on queue %q: %w", queue, err)
 	}
 
 	deliveries, err := ch.Consume(queue, "", false, false, false, false, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("consume queue %q: %w", queue, err)
 	}
 
 	slog.Info("consuming queue", slog.String("queue", queue))
@@ -138,7 +161,10 @@ func (b *Broker) consume(ctx context.Context, route consumer.Route) error {
 			return nil
 		case delivery, ok := <-deliveries:
 			if !ok {
-				return nil
+				if ctx.Err() != nil {
+					return nil
+				}
+				return fmt.Errorf("delivery channel closed for queue %q", queue)
 			}
 			batch = append(batch, delivery)
 		}
@@ -193,12 +219,12 @@ func (b *Broker) handle(ctx context.Context, route consumer.Route, batch []amqp0
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(time.Duration(attempt) * time.Second):
+		case <-time.After(time.Duration(attempt) * b.backoff):
 		}
 	}
 
 	if err != nil {
-		slog.Error("giving up, discarding the batch",
+		slog.Error("giving up, dead-lettering the batch",
 			slog.String("queue", queue),
 			slog.Any("error", err),
 		)
@@ -223,6 +249,10 @@ func (b *Broker) handle(ctx context.Context, route consumer.Route, batch []amqp0
 
 func (b *Broker) queueName(topic string) string {
 	return fmt.Sprintf("%s.%s", b.groupId, topic)
+}
+
+func (b *Broker) dlxName() string {
+	return fmt.Sprintf("%s.dlx", b.exchange)
 }
 
 func toMessage(delivery amqp091.Delivery) *consumer.Message {

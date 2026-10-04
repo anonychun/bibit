@@ -19,6 +19,7 @@ import (
 const (
 	defaultBatchSize    = 100
 	defaultBatchTimeout = 500 * time.Millisecond
+	defaultBackoff      = time.Second
 	maxAttempts         = 3
 )
 
@@ -35,6 +36,7 @@ type Broker struct {
 	groupId      string
 	batchSize    int
 	batchTimeout time.Duration
+	backoff      time.Duration
 }
 
 var _ IBroker = (*Broker)(nil)
@@ -65,6 +67,7 @@ func NewBroker(i do.Injector) (*Broker, error) {
 		groupId:      cfg.GroupId,
 		batchSize:    batchSize,
 		batchTimeout: batchTimeout,
+		backoff:      defaultBackoff,
 	}, nil
 }
 
@@ -132,7 +135,13 @@ func (b *Broker) consume(ctx context.Context, reader *kafka.Reader, route consum
 		}
 		timer.Stop()
 
-		b.handle(ctx, reader, route, batch)
+		err := b.handle(ctx, reader, route, batch)
+		if err != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
+			return err
+		}
 	}
 }
 
@@ -161,7 +170,7 @@ func (b *Broker) fetch(ctx context.Context, reader *kafka.Reader, fetches chan<-
 	}
 }
 
-func (b *Broker) handle(ctx context.Context, reader *kafka.Reader, route consumer.Route, batch []kafka.Message) {
+func (b *Broker) handle(ctx context.Context, reader *kafka.Reader, route consumer.Route, batch []kafka.Message) error {
 	messages := make([]*consumer.Message, len(batch))
 	for i, msg := range batch {
 		messages[i] = toMessage(msg)
@@ -186,26 +195,29 @@ func (b *Broker) handle(ctx context.Context, reader *kafka.Reader, route consume
 
 		select {
 		case <-ctx.Done():
-			return
-		case <-time.After(time.Duration(attempt) * time.Second):
+			return ctx.Err()
+		case <-time.After(time.Duration(attempt) * b.backoff):
 		}
 	}
 
 	if err != nil {
-		slog.Error("giving up, the batch will be redelivered after a restart",
+		slog.Error("giving up, stopping the consumer, the batch stays uncommitted and will be redelivered after a restart",
 			slog.String("topic", route.Topic),
 			slog.Any("error", err),
 		)
-		return
+		return fmt.Errorf("consume batch from topic %q: %w", route.Topic, err)
 	}
 
 	err = reader.CommitMessages(context.WithoutCancel(ctx), batch...)
 	if err != nil {
-		slog.Error("failed to commit messages",
+		slog.Error("failed to commit messages, stopping the consumer, the batch will be redelivered after a restart",
 			slog.String("topic", route.Topic),
 			slog.Any("error", err),
 		)
+		return fmt.Errorf("commit batch on topic %q: %w", route.Topic, err)
 	}
+
+	return nil
 }
 
 func toMessage(kmsg kafka.Message) *consumer.Message {

@@ -1,11 +1,15 @@
 package rabbitmq
 
 import (
+	"context"
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/anonychun/bibit/internal/consumer"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestToMessage(t *testing.T) {
@@ -43,4 +47,25 @@ func TestBackend_QueueName(t *testing.T) {
 	backend := &Broker{groupId: "bibit"}
 
 	assert.Equal(t, "bibit.hello", backend.queueName("hello"))
+}
+
+func TestBackend_DlxName(t *testing.T) {
+	backend := &Broker{exchange: "bibit"}
+
+	assert.Equal(t, "bibit.dlx", backend.dlxName())
+}
+
+func TestHandle(t *testing.T) {
+	t.Run("retries until max attempts, then dead-letters the batch", func(t *testing.T) {
+		mc := consumer.NewMockIConsumer(t)
+		mc.On("Consume", mock.Anything, mock.Anything).Return(errors.New("boom")).Times(maxAttempts)
+
+		backend := &Broker{groupId: "bibit", backoff: time.Millisecond}
+		route := consumer.Route{Topic: "hello", Consumer: mc}
+		batch := []amqp091.Delivery{{RoutingKey: "hello", Body: []byte("hello world")}}
+
+		backend.handle(context.Background(), route, batch)
+
+		mc.AssertNumberOfCalls(t, "Consume", maxAttempts)
+	})
 }

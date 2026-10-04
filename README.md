@@ -697,7 +697,7 @@ func (c *Consumer) Consume(ctx context.Context, messages []*consumer.Message) er
 }
 ```
 
-`Message` is the transport agnostic envelope: `Topic`, `Key`, `Value`, `Headers`, and `Timestamp`. Returning an error makes the backend retry the batch (3 attempts, growing backoff), then move on without acknowledging it, so Kafka redelivers after a restart and RabbitMQ drops the batch. A successful batch is committed (Kafka) or acked (RabbitMQ).
+`Message` is the transport agnostic envelope: `Topic`, `Key`, `Value`, `Headers`, and `Timestamp`. Returning an error makes the backend retry the batch (3 attempts, growing backoff). A successful batch is committed (Kafka) or acked (RabbitMQ). When every attempt fails, the backends part ways: Kafka stops the worker, so the batch stays uncommitted and is redelivered after a restart; RabbitMQ dead-letters the batch and keeps going, because every queue is declared with `x-dead-letter-exchange` pointing at the `<BROKER_RABBITMQ_EXCHANGE>.dlx` exchange — failed messages land in `<group_id>.<topic>.dlq` instead of being dropped.
 
 To create the `order_events` consumer, make `internal/consumer/order_events/consumer.go`:
 
@@ -740,7 +740,8 @@ Topics map to brokers like this:
 | --- | --- | --- |
 | Subscribes with | consumer group `BROKER_KAFKA_GROUP_ID` | durable queue `<group_id>.<topic>` on the `BROKER_RABBITMQ_EXCHANGE` topic exchange |
 | `Message.Topic` | the Kafka topic | the routing key the message was published with |
-| Batching | up to `BROKER_KAFKA_BATCH_SIZE`, closed after `BROKER_KAFKA_BATCH_TIMEOUT` of quiet | same, with the `BROKER_RABBITMQ_*` variables |
+| Batching | up to `BROKER_KAFKA_BATCH_SIZE` messages, or `BROKER_KAFKA_BATCH_TIMEOUT` after the batch's first message | same, with the `BROKER_RABBITMQ_*` variables |
+| Failed batch (3 attempts) | the worker stops, so the batch is redelivered after a restart | dead-lettered to `<group_id>.<topic>.dlq` on the `<exchange>.dlx` exchange |
 
 Both sizes and timeouts have defaults (100 messages, 500ms). For RabbitMQ, publish with the topic as routing key: `ch.PublishWithContext(ctx, exchange, "hello", false, false, amqp091.Publishing{Body: []byte("hello world")})`.
 
