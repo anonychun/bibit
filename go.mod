@@ -17,10 +17,12 @@ require (
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/pressly/goose/v3 v3.28.0
 	github.com/prometheus/client_golang v1.24.1
+	github.com/rabbitmq/amqp091-go v1.15.0
 	github.com/riverqueue/river v0.48.0
 	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.48.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.48.0
 	github.com/samber/do/v2 v2.1.0
+	github.com/segmentio/kafka-go v0.4.51
 	github.com/stretchr/testify v1.12.1
 	github.com/uptrace/bun v1.3.0
 	github.com/uptrace/bun/dialect/pgdialect v1.3.0
@@ -66,11 +68,13 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/klauspost/compress v1.20.1 // indirect
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
 	github.com/prometheus/common v0.72.0 // indirect
 	github.com/prometheus/otlptranslator v1.0.0 // indirect

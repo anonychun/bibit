@@ -21,6 +21,7 @@ The code comes with a small sign-up/sign-in feature (`user` and `user_session`).
   - [7. Middleware](#7-middleware)
   - [8. Background jobs](#8-background-jobs)
   - [9. File storage](#9-file-storage)
+  - [10. Message consumers](#10-message-consumers)
 - [Shared packages](#shared-packages)
 - [Testing](#testing)
 - [Observability](#observability)
@@ -84,9 +85,11 @@ cmd/
 internal/
   api/            response envelope, API errors, validation errors
   bootstrap/      dependency injector and process lifecycle
+  broker/         message broker backends (Kafka, RabbitMQ)
   client/         clients for other systems (River job queue)
   config/         environment configuration
   consts/         shared constants and API errors
+  consumer/       message broker consumers, one package per topic
   current/        request-scoped values on context.Context
   db/             database connections, migrator, seeder
   dto/            response shapes shared across usecases
@@ -142,7 +145,7 @@ The rules behind that shape:
 - A constructor fetches its dependencies with `do.MustInvoke[*Concrete](i)` and stores them as interfaces. Tests can then swap in the generated mocks.
 - A package's `init()` only runs if something imports the package. The import chain starts at `cmd/`: the server imports handlers, handlers import usecases, usecases import repositories. A new component becomes available once it sits on that chain.
 - Any component with a `Shutdown(ctx context.Context) error` method is shut down when the process receives SIGINT or SIGTERM. `bootstrap.RunCommand` gives shutdown 30 seconds.
-- Packages that share a name get an import alias made of the layer and the path: `repositoryUser`, `repositoryUserSession`, `usecaseApiV1AppAuth`, `middlewareAuth`, `jobHello`, `dbSql`.
+- Packages that share a name get an import alias made of the layer and the path: `repositoryUser`, `repositoryUserSession`, `usecaseApiV1AppAuth`, `middlewareAuth`, `jobHello`, `consumerKafka`, `dbSql`.
 
 A request passes through the layers in this order:
 
@@ -151,6 +154,16 @@ HTTP/gRPC request
   -> middleware          (internal/middleware)
   -> handler             (internal/usecase/<feature>/http_handler.go)
   -> usecase             (internal/usecase/<feature>/usecase.go)
+  -> repository          (internal/repository/<table>)
+  -> PostgreSQL
+```
+
+Messages from a broker pass through the same layers:
+
+```
+Message broker
+  -> consumer            (internal/consumer/<topic>)
+  -> usecase             (internal/usecase/<feature>)
   -> repository          (internal/repository/<table>)
   -> PostgreSQL
 ```
@@ -668,6 +681,70 @@ func (u *Usecase) Upload(ctx context.Context, req UploadRequest) (*UploadRespons
 
 To return a file to clients, use `dto.NewAttachmentBlueprint`. It returns `{id, fileName, url}`, where `url` is a presigned download link. It returns `nil` for a `nil` attachment, so optional files need no extra check.
 
+### 10. Message consumers
+
+Consumers process messages from a message broker, inspired by [Karafka](https://github.com/karafka/karafka). The interface is broker agnostic: Kafka ([segmentio/kafka-go](https://github.com/segmentio/kafka-go)) and RabbitMQ ([rabbitmq/amqp091-go](https://github.com/rabbitmq/amqp091-go)) are interchangeable backends. Everything a broker needs — connection and consumption loop — lives in one package: `internal/broker/kafka` or `internal/broker/rabbitmq`. Pick a backend with `BROKER_BACKEND` in `.env`; leave it empty to run without a broker. Consumers run on the worker process, next to the River jobs: `./bin/worker start`.
+
+A consumer takes a batch of messages from one topic:
+
+```go
+func (c *Consumer) Consume(ctx context.Context, messages []*consumer.Message) error {
+	for _, message := range messages {
+		slog.Info("hello", slog.String("value", string(message.Value)))
+	}
+
+	return nil
+}
+```
+
+`Message` is the transport agnostic envelope: `Topic`, `Key`, `Value`, `Headers`, and `Timestamp`. Returning an error makes the backend retry the batch (3 attempts, growing backoff). A successful batch is committed (Kafka) or acked (RabbitMQ). When every attempt fails, the backends part ways: Kafka stops the worker, so the batch stays uncommitted and is redelivered after a restart; RabbitMQ dead-letters the batch and keeps going, because every queue is declared with `x-dead-letter-exchange` pointing at the `<BROKER_RABBITMQ_EXCHANGE>.dlx` exchange — failed messages land in `<group_id>.<topic>.dlq` instead of being dropped.
+
+To create the `order_events` consumer, make `internal/consumer/order_events/consumer.go`:
+
+```go
+package order_events
+
+type Consumer struct{}
+
+var _ consumer.IConsumer = (*Consumer)(nil)
+
+func NewConsumer(i do.Injector) (*Consumer, error) {
+	return &Consumer{}, nil
+}
+
+func (c *Consumer) Consume(ctx context.Context, messages []*consumer.Message) error {
+	...
+}
+```
+
+Dependencies work like everywhere else: add fields, fetch them in `NewConsumer` with `do.MustInvoke`, and store them as interfaces so tests can swap in mocks.
+
+Register the consumer on a topic in `NewWorker` in `internal/worker/worker.go`, next to the job registration:
+
+```go
+err := addRoutes(&routes,
+	consumer.Route{
+		Topic:    "hello",
+		Consumer: do.MustInvoke[*consumerHello.Consumer](i),
+	},
+	consumer.Route{
+		Topic:    "order_events",
+		Consumer: do.MustInvoke[*consumerOrderEvents.Consumer](i),
+	},
+)
+```
+
+Topics map to brokers like this:
+
+| | Kafka | RabbitMQ |
+| --- | --- | --- |
+| Subscribes with | consumer group `BROKER_KAFKA_GROUP_ID` | durable queue `<group_id>.<topic>` on the `BROKER_RABBITMQ_EXCHANGE` topic exchange |
+| `Message.Topic` | the Kafka topic | the routing key the message was published with |
+| Batching | up to `BROKER_KAFKA_BATCH_SIZE` messages, or `BROKER_KAFKA_BATCH_TIMEOUT` after the batch's first message | same, with the `BROKER_RABBITMQ_*` variables |
+| Failed batch (3 attempts) | the worker stops, so the batch is redelivered after a restart | dead-lettered to `<group_id>.<topic>.dlq` on the `<exchange>.dlx` exchange |
+
+Both sizes and timeouts have defaults (100 messages, 500ms). For RabbitMQ, publish with the topic as routing key: `ch.PublishWithContext(ctx, exchange, "hello", false, false, amqp091.Publishing{Body: []byte("hello world")})`.
+
 ## Shared packages
 
 | Package | What it gives you |
@@ -708,6 +785,8 @@ Each layer is tested differently:
 
 - **HTTP handlers** use `httptest` with a mocked usecase and assert on the status, JSON body, and cookies.
 
+- **Consumers** are tested like usecases: call `Consume` with a batch of `consumer.Message` values and mocked dependencies, then assert on the outcome.
+
 Mocks are generated by [mockery](https://github.com/vektra/mockery) into a `mock.go` next to each interface. Run `./bin/mockery` after adding or changing an interface. Never edit `mock.go` by hand.
 
 ## Observability
@@ -736,6 +815,7 @@ These files exist to demonstrate the patterns. Delete them, or rewrite them for 
 - `internal/usecase/api/v1/app/auth/`
 - `internal/middleware/auth/`
 - `internal/job/hello/`, and its registration in `internal/worker/worker.go`
+- `internal/consumer/hello/`, and its registration in `internal/worker/worker.go`
 - `internal/consts/cookie.go` and the auth errors in `internal/consts/error.go`
 - The auth handler field in `internal/server/http_server.go` and the `/api/v1/app` routes in `internal/server/route.go`
 - The `users` and `user_sessions` tables in `migrations/20010114000000_init.sql`
